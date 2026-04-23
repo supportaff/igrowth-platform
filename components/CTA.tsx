@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { ArrowRight } from 'lucide-react'
 
 export default function CTA() {
@@ -11,13 +12,13 @@ export default function CTA() {
               Ready to turn followers into <span className="gradient-text">revenue?</span>
             </h2>
             <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto">
-              Join thousands of creators and businesses using iGrowth to automate, capture, and convert — every single day.
+              Join thousands of creators and businesses using iGrowth to automate, capture, and convert &mdash; every single day.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <a href="#" className="group flex items-center gap-2 bg-gradient-to-r from-brand-500 to-accent-500 text-white font-semibold px-8 py-4 rounded-full text-lg hover:opacity-90 transition-all glow">
+              <Link href="/signup" className="group flex items-center gap-2 bg-gradient-to-r from-brand-500 to-accent-500 text-white font-semibold px-8 py-4 rounded-full text-lg hover:opacity-90 transition-all glow">
                 Start Free Today
                 <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </a>
+              </Link>
               <p className="text-white/40 text-sm">No credit card required. Free forever plan available.</p>
             </div>
           </div>
