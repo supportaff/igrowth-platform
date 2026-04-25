@@ -4,275 +4,132 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
+/* ════════════════════════════════════════════════
+   DESIGN TOKENS — all CSS vars used across the app
+   ════════════════════════════════════════════════ */
+:root {
+  /* Typography */
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+
+  /* Surfaces */
+  --bg:          #f9f9f9;
+  --surface-1:   #ffffff;
+  --surface-2:   #f3f3f3;
+  --surface-3:   #ebebeb;
+  --surface-4:   #e2e2e2;
+
+  /* Text */
+  --text-primary:   #0a0a0a;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+  --text-faint:     #9ca3af;
+
+  /* Border */
+  --border: rgba(0, 0, 0, 0.08);
+
+  /* Status colors */
+  --green:  #16a34a;
+  --amber:  #d97706;
+  --red:    #dc2626;
+  --blue:   #2563eb;
+  --purple: #7c3aed;
+
+  /* Shadcn tokens */
+  --background:           0 0% 100%;
+  --foreground:           0 0% 4%;
+  --card:                 0 0% 100%;
+  --card-foreground:      0 0% 4%;
+  --popover:              0 0% 100%;
+  --popover-foreground:   0 0% 4%;
+  --primary:              0 0% 6%;
+  --primary-foreground:   0 0% 98%;
+  --secondary:            0 0% 96%;
+  --secondary-foreground: 0 0% 10%;
+  --muted:                0 0% 96%;
+  --muted-foreground:     0 0% 30%;
+  --accent:               0 0% 93%;
+  --accent-foreground:    0 0% 10%;
+  --destructive:          0 84% 50%;
+  --destructive-foreground: 0 0% 98%;
+  --border-hsl:           0 0% 85%;
+  --input:                0 0% 85%;
+  --ring:                 0 0% 10%;
+  --chart-1: 221 83% 53%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 25 95% 53%;
+  --chart-4: 262 83% 58%;
+  --chart-5: 0 84% 50%;
+  --radius: 0.8rem;
+
+  /* Afforal tokens */
+  --r2r-brand:  #0a0a0a;
+  --r2r-border: #E5E5E5;
+  --r2r-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+
+  /* Status box tokens */
+  --box-green-bg:     #f0fdf4;
+  --box-green-border: #bbf7d0;
+  --box-green-text:   #15803d;
+  --box-amber-bg:     #fffbeb;
+  --box-amber-border: #fde68a;
+  --box-amber-text:   #92400e;
+  --box-blue-bg:      #eff6ff;
+  --box-blue-border:  #bfdbfe;
+  --box-blue-text:    #1d4ed8;
+  --box-purple-bg:    #faf5ff;
+  --box-purple-border:#e9d5ff;
+  --box-purple-text:  #7c3aed;
+  --box-red-bg:       #fef2f2;
+  --box-red-border:   #fecaca;
+  --box-red-text:     #dc2626;
+}
+
+/* Force light everywhere — no dark mode */
+.dark { color-scheme: light; }
+
+@layer base {
+  * { border-color: hsl(var(--border-hsl)); }
+
+  html, body { min-height: 100%; background-color: #ffffff !important; color: #0a0a0a !important; }
+
+  body {
     margin: 0;
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    background: #FFFFFF;
-    color: #0a0a0a;
-}
-
-code {
-    font-family:
-        source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
-}
-
-@layer base {
-    :root {
-        /* ─── Surfaces ─── */
-        --background: 0 0% 100%;
-        --foreground: 0 0% 4%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 4%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 4%;
-
-        /* ─── Brand / Primary → black ─── */
-        --primary: 0 0% 6%;
-        --primary-foreground: 0 0% 98%;
-
-        /* ─── Secondary / Muted ─── */
-        --secondary: 0 0% 96%;
-        --secondary-foreground: 0 0% 10%;
-        --muted: 0 0% 96%;
-        --muted-foreground: 0 0% 30%;
-        --accent: 0 0% 93%;
-        --accent-foreground: 0 0% 10%;
-
-        /* ─── Destructive ─── */
-        --destructive: 0 84% 50%;
-        --destructive-foreground: 0 0% 98%;
-
-        /* ─── Borders / Inputs ─── */
-        --border: 0 0% 85%;
-        --input: 0 0% 85%;
-        --ring: 0 0% 10%;
-
-        /* ─── Charts ─── */
-        --chart-1: 221 83% 53%;
-        --chart-2: 142 71% 45%;
-        --chart-3: 25 95% 53%;
-        --chart-4: 262 83% 58%;
-        --chart-5: 0 84% 50%;
-
-        --radius: 0.8rem;
-
-        /* ─── Afforal brand tokens ─── */
-        --r2r-brand: #0a0a0a;
-        --r2r-brand-hover: #333333;
-        --r2r-bg: #FFFFFF;
-        --r2r-card: #FFFFFF;
-        --r2r-border: #E5E5E5;
-        --r2r-shadow: 0 1px 4px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
-
-        /* ─── iGrowth dashboard tokens ─── */
-        --surface-1: #f9f9f9;
-        --surface-2: #f3f3f3;
-        --surface-3: #ebebeb;
-        --text-muted: #737373;
-        --ig-border: rgba(0,0,0,0.08);
-        --green: #16a34a;
-
-        /* ─── Status box tokens ─── */
-        --box-green-bg:    #f0fdf4;
-        --box-green-border:#bbf7d0;
-        --box-green-text:  #15803d;
-        --box-amber-bg:    #fffbeb;
-        --box-amber-border:#fde68a;
-        --box-amber-text:  #92400e;
-        --box-blue-bg:     #eff6ff;
-        --box-blue-border: #bfdbfe;
-        --box-blue-text:   #1d4ed8;
-        --box-purple-bg:   #faf5ff;
-        --box-purple-border:#e9d5ff;
-        --box-purple-text: #7c3aed;
-        --box-red-bg:      #fef2f2;
-        --box-red-border:  #fecaca;
-        --box-red-text:    #dc2626;
-
-        /* ─── Color-coded accents ─── */
-        --aff-blue: #2563eb;
-        --aff-blue-bg: #eff6ff;
-        --aff-green: #16a34a;
-        --aff-green-bg: #f0fdf4;
-        --aff-orange: #ea580c;
-        --aff-orange-bg: #fff7ed;
-        --aff-purple: #7c3aed;
-        --aff-purple-bg: #f5f3ff;
-        --aff-red: #dc2626;
-        --aff-red-bg: #fef2f2;
-        --aff-yellow: #ca8a04;
-        --aff-yellow-bg: #fefce8;
-    }
-
-    /* NO dark mode — force light everywhere */
-    .dark {
-        --background: 0 0% 100%;
-        --foreground: 0 0% 4%;
-        --card: 0 0% 100%;
-        --card-foreground: 0 0% 4%;
-        --popover: 0 0% 100%;
-        --popover-foreground: 0 0% 4%;
-        --primary: 0 0% 6%;
-        --primary-foreground: 0 0% 98%;
-        --secondary: 0 0% 96%;
-        --secondary-foreground: 0 0% 10%;
-        --muted: 0 0% 96%;
-        --muted-foreground: 0 0% 30%;
-        --accent: 0 0% 93%;
-        --accent-foreground: 0 0% 10%;
-        --destructive: 0 84% 50%;
-        --destructive-foreground: 0 0% 98%;
-        --border: 0 0% 85%;
-        --input: 0 0% 85%;
-        --ring: 0 0% 10%;
-        --chart-1: 221 83% 53%;
-        --chart-2: 142 71% 45%;
-        --chart-3: 25 95% 53%;
-        --chart-4: 262 83% 58%;
-        --chart-5: 0 84% 50%;
-    }
-}
-
-@layer base {
-    * {
-        border-color: hsl(var(--border));
-    }
-
-    html,
-    body,
-    #__next {
-        min-height: 100%;
-        background-color: #ffffff !important;
-        color: #0a0a0a !important;
-    }
-
-    body {
-        background-color: hsl(var(--background));
-        color: hsl(var(--foreground));
-    }
+    background: var(--bg);
+    color: var(--text-primary);
+  }
 }
 
 /* ════════════════════════════════════════════════
-   SHADCN COMPONENT OVERRIDES — force light theme
+   SHADCN OVERRIDES — force light theme everywhere
    ════════════════════════════════════════════════ */
-
-/* ── Tabs ── */
-[role="tablist"],
-.tabs-list,
-[data-radix-tabs-list] {
-    background-color: #f3f4f6 !important;
-    color: #374151 !important;
-    border-radius: 0.75rem !important;
+[role="tablist"], .tabs-list, [data-radix-tabs-list] {
+  background-color: #f3f4f6 !important;
+  color: #374151 !important;
+  border-radius: 0.75rem !important;
 }
-
-[role="tab"],
-[data-radix-collection-item] {
-    color: #374151 !important;
-    font-weight: 500;
+[role="tab"], [data-radix-collection-item] { color: #374151 !important; font-weight: 500; }
+[role="tab"][data-state="active"], [data-radix-collection-item][data-state="active"] {
+  background-color: #ffffff !important; color: #0a0a0a !important; font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
-
-[role="tab"][data-state="active"],
-[data-radix-collection-item][data-state="active"] {
-    background-color: #ffffff !important;
-    color: #0a0a0a !important;
-    font-weight: 600;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+[data-radix-switch-root], button[role="switch"] { background-color: #d1d5db !important; }
+[data-radix-switch-root][data-state="checked"], button[role="switch"][data-state="checked"] { background-color: #0a0a0a !important; }
+[data-radix-switch-thumb], span[data-radix-switch-thumb] { background-color: #ffffff !important; }
+[data-radix-popper-content-wrapper], [role="dialog"], .popover-content, [data-radix-alert-dialog-content] {
+  background-color: #ffffff !important; color: #0a0a0a !important;
 }
+input, textarea, select { background-color: #ffffff !important; color: #0a0a0a !important; border-color: #e5e7eb !important; }
+input::placeholder, textarea::placeholder { color: #9ca3af !important; }
+button { color: inherit; }
 
-/* ── Switch toggle → black not purple ── */
-[data-radix-switch-root],
-button[role="switch"] {
-    background-color: #d1d5db !important;
-}
-
-[data-radix-switch-root][data-state="checked"],
-button[role="switch"][data-state="checked"] {
-    background-color: #0a0a0a !important;
-}
-
-[data-radix-switch-thumb],
-span[data-radix-switch-thumb] {
-    background-color: #ffffff !important;
-}
-
-/* ── Shadcn card/dialog/popover ── */
-[data-radix-popper-content-wrapper],
-[role="dialog"],
-.popover-content,
-[data-radix-alert-dialog-content] {
-    background-color: #ffffff !important;
-    color: #0a0a0a !important;
-}
-
-/* ── Inputs ── */
-input, textarea, select {
-    background-color: #ffffff !important;
-    color: #0a0a0a !important;
-    border-color: #e5e7eb !important;
-}
-
-input::placeholder, textarea::placeholder {
-    color: #9ca3af !important;
-}
-
-/* ── Buttons default text color ── */
-button {
-    color: inherit;
-}
-
-/* ── Calendar ── */
-.rdp {
-    --rdp-accent-color: #0a0a0a;
-    --rdp-background-color: #f0f0f0;
-    margin: 0;
-}
-
-.calendar-has-event-day {
-    position: relative;
-}
-
+/* Calendar */
+.rdp { --rdp-accent-color: #0a0a0a; --rdp-background-color: #f0f0f0; margin: 0; }
+.calendar-has-event-day { position: relative; }
 .calendar-has-event-day::after {
-    content: "";
-    position: absolute;
-    bottom: 3px;
-    left: 50%;
-    width: 5px;
-    height: 5px;
-    border-radius: 9999px;
-    background: #0a0a0a;
-    transform: translateX(-50%);
-}
-
-@layer base {
-    [data-debug-wrapper="true"] {
-        display: contents !important;
-    }
-
-    [data-debug-wrapper="true"] > * {
-        margin-left: inherit;
-        margin-right: inherit;
-        margin-top: inherit;
-        margin-bottom: inherit;
-        padding-left: inherit;
-        padding-right: inherit;
-        padding-top: inherit;
-        padding-bottom: inherit;
-        column-gap: inherit;
-        row-gap: inherit;
-        gap: inherit;
-        border-left-width: inherit;
-        border-right-width: inherit;
-        border-top-width: inherit;
-        border-bottom-width: inherit;
-        border-left-style: inherit;
-        border-right-style: inherit;
-        border-top-style: inherit;
-        border-bottom-style: inherit;
-        border-left-color: inherit;
-        border-right-color: inherit;
-        border-top-color: inherit;
-        border-bottom-color: inherit;
-    }
+  content: ""; position: absolute; bottom: 3px; left: 50%;
+  width: 5px; height: 5px; border-radius: 9999px;
+  background: #0a0a0a; transform: translateX(-50%);
 }
