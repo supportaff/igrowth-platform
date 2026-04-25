@@ -27,19 +27,16 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    console.log('[webhook] event:', JSON.stringify(body))
-
-    // Always return 200 immediately — process async so Meta doesn't timeout
+    console.log('[webhook] RAW EVENT:', JSON.stringify(body))
     processWebhook(body).catch(e => console.error('[webhook] async error:', e))
-
     return NextResponse.json({ status: 'ok' })
   } catch (err) {
     console.error('[webhook] parse error:', err)
-    return NextResponse.json({ status: 'ok' }) // always 200 to Meta
+    return NextResponse.json({ status: 'ok' })
   }
 }
 
-// ── Safe JSON parse helper ───────────────────────────────
+// ── Helpers ──────────────────────────────────────────
 function safeParseJSON<T>(val: unknown, fallback: T): T {
   if (val === null || val === undefined) return fallback
   if (typeof val === 'object') return val as T
@@ -49,59 +46,100 @@ function safeParseJSON<T>(val: unknown, fallback: T): T {
   return fallback
 }
 
+type Condition = { field: string; operator: string; value: string }
+
+// Evaluate conditions array against a message text
+function matchesConditions(conditions: Condition[], msgText: string): boolean {
+  if (!conditions.length) return true // no conditions = match all
+  return conditions.every(cond => {
+    const text = msgText.toLowerCase()
+    const val  = (cond.value ?? '').toLowerCase()
+    switch (cond.operator) {
+      case 'contains':     return text.includes(val)
+      case 'not_contains': return !text.includes(val)
+      case 'equals':       return text === val
+      case 'starts_with':  return text.startsWith(val)
+      case 'ends_with':    return text.endsWith(val)
+      default:             return text.includes(val)
+    }
+  })
+}
+
+// Evaluate keywords array against a message text
+function matchesKeywords(keywords: string[], msgText: string): boolean {
+  if (!keywords.length) return true // empty keywords = match all
+  return keywords.some(kw => msgText.toLowerCase().includes(kw.toLowerCase()))
+}
+
 async function processWebhook(body: Record<string, unknown>) {
   const entries = (body.entry as Array<Record<string, unknown>>) ?? []
+  console.log(`[webhook] Processing ${entries.length} entr(ies)`)
 
   for (const entry of entries) {
     const igAccountId = String(entry.id)
-    console.log(`[webhook] processing entry for ig_account_id=${igAccountId}`)
+    console.log(`[webhook] Entry ig_account_id=${igAccountId}`)
 
-    const { data: account, error: accErr } = await supabase
+    // ─ Step 1: find the platform account ─────────────────
+    let resolvedAccount: { user_id: string; access_token: string; ig_user_id: string } | null = null
+
+    const { data: exactMatch, error: exactErr } = await supabase
       .from('instagram_accounts')
       .select('user_id, access_token, ig_user_id')
       .eq('ig_user_id', igAccountId)
       .single()
 
-    if (accErr || !account) {
-      console.warn('[webhook] No account found for ig_user_id:', igAccountId, accErr?.message)
+    if (exactMatch) {
+      console.log(`[webhook] Exact account match: ig_user_id=${exactMatch.ig_user_id} user_id=${exactMatch.user_id}`)
+      resolvedAccount = exactMatch
+    } else {
+      console.warn(`[webhook] No exact match for ig_user_id=${igAccountId} err=${exactErr?.message}`)
+      // Fallback: use first account row (single-tenant)
       const { data: allAccounts } = await supabase
         .from('instagram_accounts')
         .select('user_id, access_token, ig_user_id')
-        .limit(1)
-
-      if (!allAccounts?.length) {
-        console.warn('[webhook] No instagram_accounts rows at all — user needs to reconnect Instagram')
-        continue
+        .limit(5)
+      console.log(`[webhook] All instagram_accounts rows:`, JSON.stringify(allAccounts))
+      if (allAccounts?.length) {
+        resolvedAccount = allAccounts[0]
+        console.log(`[webhook] Using fallback account: ig_user_id=${resolvedAccount.ig_user_id} user_id=${resolvedAccount.user_id}`)
       }
-      console.log('[webhook] Using fallback account:', allAccounts[0].ig_user_id)
-      Object.assign(entry, { _account: allAccounts[0] })
     }
 
-    const resolvedAccount = (entry._account as typeof account) ?? account
-    if (!resolvedAccount) continue
+    if (!resolvedAccount) {
+      console.error('[webhook] FATAL: No instagram_accounts found. User must reconnect Instagram.')
+      continue
+    }
 
-    const { data: rawAutomations } = await supabase
+    // ─ Step 2: fetch active automations ─────────────────
+    console.log(`[webhook] Querying automations for user_id=${resolvedAccount.user_id}`)
+    const { data: rawAutomations, error: autoErr } = await supabase
       .from('automations')
       .select('*')
       .eq('user_id', resolvedAccount.user_id)
       .eq('status', 'active')
 
+    console.log(`[webhook] automations query result: count=${rawAutomations?.length ?? 0} err=${autoErr?.message ?? 'none'}`)
+
     if (!rawAutomations?.length) {
-      console.log(`[webhook] No active automations for user_id=${resolvedAccount.user_id}`)
+      // Log ALL automations regardless of user_id to help debug
+      const { data: allAutos } = await supabase.from('automations').select('id,user_id,status,name').limit(10)
+      console.warn(`[webhook] No active automations for user_id=${resolvedAccount.user_id}. All automations:`, JSON.stringify(allAutos))
       continue
     }
 
     const automations = rawAutomations.map(a => ({
       ...a,
       keywords:   safeParseJSON<string[]>(a.keywords, []),
-      conditions: safeParseJSON<unknown[]>(a.conditions, []),
+      conditions: safeParseJSON<Condition[]>(a.conditions, []),
       actions:    safeParseJSON<Array<{ type: string; message: string; delay?: number }>>(a.actions, []),
     }))
 
-    console.log(`[webhook] Found ${automations.length} active automation(s) for user_id=${resolvedAccount.user_id}`)
+    console.log(`[webhook] ${automations.length} active automation(s) loaded`)
 
-    // ── DM messages ──────────────────────────────────────
+    // ─ Step 3: handle DM messages ─────────────────────
     const messagingEvents = (entry.messaging as Array<Record<string, unknown>>) ?? []
+    console.log(`[webhook] ${messagingEvents.length} messaging event(s)`)
+
     for (const event of messagingEvents) {
       const sender   = event.sender as Record<string, string>
       const msgObj   = event.message as Record<string, unknown>
@@ -109,31 +147,46 @@ async function processWebhook(body: Record<string, unknown>) {
       const msgText  = String(msgObj?.text ?? '')
       const mid      = String(msgObj?.mid ?? '')
 
-      if (!senderId || !msgText) continue
-      if (senderId === igAccountId) continue
+      if (!senderId || !msgText) {
+        console.log(`[webhook] Skipping event - no senderId or msgText`)
+        continue
+      }
+      if (senderId === igAccountId) {
+        console.log(`[webhook] Skipping self-message from ${senderId}`)
+        continue
+      }
 
-      console.log(`[webhook] DM from ${senderId}: "${msgText}" (mid=${mid})`)
+      console.log(`[webhook] DM from ${senderId}: "${msgText}" mid=${mid}`)
 
+      // Dedup by mid
       if (mid) {
         const { count } = await supabase
           .from('automation_logs')
           .select('id', { count: 'exact', head: true })
           .eq('message_id', mid)
         if ((count ?? 0) > 0) {
-          console.log(`[webhook] Skipping duplicate mid=${mid}`)
+          console.log(`[webhook] Duplicate mid=${mid}, skipping`)
           continue
         }
       }
 
       for (const auto of automations) {
-        if (auto.trigger !== 'dm_keyword') continue
-        const keywords: string[] = auto.keywords ?? []
-        const matched = keywords.length === 0 ||
-          keywords.some((kw: string) => msgText.toLowerCase().includes(kw.toLowerCase()))
+        if (auto.trigger !== 'dm_keyword') {
+          console.log(`[webhook] Automation "${auto.name}" trigger=${auto.trigger} != dm_keyword, skip`)
+          continue
+        }
 
-        console.log(`[webhook] Automation "${auto.name}" keyword match: ${matched} (keywords: [${keywords.join(', ')}])`)
+        // Match by keywords OR conditions (whichever is populated)
+        const keywordMatch   = matchesKeywords(auto.keywords, msgText)
+        const conditionMatch = matchesConditions(auto.conditions, msgText)
+        // Use conditions if present, else keywords
+        const matched = auto.conditions.length > 0 ? conditionMatch : keywordMatch
+
+        console.log(`[webhook] Automation "${auto.name}" keywords=[${auto.keywords.join(',')}] conditions=${JSON.stringify(auto.conditions)} keywordMatch=${keywordMatch} conditionMatch=${conditionMatch} matched=${matched}`)
+
         if (!matched) continue
 
+        console.log(`[webhook] MATCHED automation "${auto.name}" - executing ${auto.actions.length} action(s)`)
         await executeActions(
           auto.actions, senderId, resolvedAccount.access_token,
           resolvedAccount.ig_user_id, resolvedAccount.user_id,
@@ -142,7 +195,7 @@ async function processWebhook(body: Record<string, unknown>) {
       }
     }
 
-    // ── Post/Reel comments ───────────────────────────────
+    // ─ Step 4: handle post/reel comments ──────────────
     const changes = (entry.changes as Array<Record<string, unknown>>) ?? []
     for (const change of changes) {
       const field = String(change.field ?? '')
@@ -160,9 +213,9 @@ async function processWebhook(body: Record<string, unknown>) {
 
       for (const auto of automations) {
         if (auto.trigger !== expectedTrigger) continue
-        const keywords: string[] = auto.keywords ?? []
-        const matched = keywords.length === 0 ||
-          keywords.some((kw: string) => commentText.toLowerCase().includes(kw.toLowerCase()))
+        const matched = auto.conditions.length > 0
+          ? matchesConditions(auto.conditions, commentText)
+          : matchesKeywords(auto.keywords, commentText)
         if (!matched) continue
 
         await executeActions(
@@ -190,12 +243,13 @@ async function executeActions(
   messageText?: string
 ) {
   if (!actions?.length) {
-    console.warn(`[webhook] No actions to execute for automation ${automationId}`)
+    console.warn(`[webhook] No actions for automation ${automationId}`)
     return
   }
 
   for (const action of actions) {
     if ((action.delay ?? 0) > 0) {
+      console.log(`[webhook] Waiting ${action.delay} min before action`)
       await new Promise(r => setTimeout(r, (action.delay ?? 0) * 60 * 1000))
     }
 
@@ -205,19 +259,19 @@ async function executeActions(
 
     try {
       if (action.type === 'send_dm') {
-        console.log(`[webhook] Sending DM to ${recipientId}: "${action.message}"`)
+        console.log(`[webhook] Sending DM to ${recipientId} via ig_account=${igAccountId}`)
         igResponse = await sendDM(recipientId, action.message, accessToken, igAccountId)
-        console.log(`[webhook] DM sent successfully:`, igResponse)
+        console.log(`[webhook] DM sent OK:`, JSON.stringify(igResponse))
       } else if (action.type === 'reply_comment' && commentId) {
         igResponse = await replyComment(commentId, action.message, accessToken)
       }
     } catch (err: unknown) {
       status       = 'failed'
       errorMessage = err instanceof Error ? err.message : String(err)
-      console.error(`[webhook] Action ${action.type} failed:`, errorMessage)
+      console.error(`[webhook] Action ${action.type} FAILED:`, errorMessage)
     }
 
-    await db.from('automation_logs').insert({
+    const { error: logErr } = await db.from('automation_logs').insert({
       automation_id:  automationId,
       user_id:        userId,
       trigger_type:   triggerType,
@@ -230,13 +284,13 @@ async function executeActions(
       error_message:  errorMessage || null,
       ig_response:    igResponse ? JSON.stringify(igResponse) : null,
     })
+    if (logErr) console.error('[webhook] Failed to insert log:', logErr.message)
   }
 
-  // FIX: wrap in Promise.resolve() so .catch() is available on PromiseLike
   await Promise.resolve(
     db.rpc('increment_automation_runs', { automation_id: automationId })
   )
-    .then(() => console.log(`[webhook] Incremented run counter for ${automationId}`))
+    .then(() => console.log(`[webhook] Run counter incremented for ${automationId}`))
     .catch(e  => console.error('[webhook] increment_automation_runs failed:', e))
 }
 
@@ -246,7 +300,9 @@ async function sendDM(
   accessToken: string,
   igAccountId: string
 ) {
-  const res = await fetch(`${IG_API}/${igAccountId}/messages`, {
+  const url = `${IG_API}/${igAccountId}/messages`
+  console.log(`[webhook] POST ${url}`)
+  const res = await fetch(url, {
     method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
