@@ -1,10 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
+import { createBrowserClient } from '@supabase/ssr'
 import Pricing from '@/components/Pricing'
 
 export default function UpgradePage() {
-  const supabase = createClientComponentClient()
+  const supabase = createBrowserClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  )
+
   const [user, setUser] = useState<{
     id: string; email: string; name: string; phone: string; plan: string
   } | null>(null)
@@ -30,7 +34,7 @@ export default function UpgradePage() {
       })
     }
     load()
-  }, [supabase])
+  }, [])
 
   return (
     <div style={{ padding: '40px 0' }}>

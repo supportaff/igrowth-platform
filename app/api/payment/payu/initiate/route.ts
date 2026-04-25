@@ -1,38 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// ───────────────────────────────────────────────────────────────────
+// ───────────────────────────────────────────────────────────────────────────
 // PayU config
-// Set PAYU_ENV=live in Vercel to go live — key/salt variable names stay the same.
-// Just replace the VALUES of PAYU_KEY and PAYU_SALT with your live credentials.
-// ───────────────────────────────────────────────────────────────────
+// Set PAYU_ENV=live in Vercel to go live — key/salt variable names stay same.
+// Just replace VALUES of PAYU_KEY and PAYU_SALT with your live credentials.
+// ───────────────────────────────────────────────────────────────────────────
 const IS_LIVE = process.env.PAYU_ENV === 'live'
 
 const PAYU_URL = IS_LIVE
-  ? 'https://secure.payu.in/_payment'   // live
-  : 'https://test.payu.in/_payment'     // test
+  ? 'https://secure.payu.in/_payment'  // live
+  : 'https://test.payu.in/_payment'    // test
 
-// Single set of env vars — just swap the VALUES when going live
 const MERCHANT_KEY  = process.env.PAYU_KEY!
 const MERCHANT_SALT = process.env.PAYU_SALT!
-
-const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+const BASE_URL      = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
 function generateHash(params: {
   key: string; txnid: string; amount: string; productinfo: string;
   firstname: string; email: string; salt: string;
 }): string {
-  // PayU hash formula: sha512(key|txnid|amount|productinfo|firstname|email|udf1-udf5||||||salt)
   const str = [
     params.key, params.txnid, params.amount, params.productinfo,
     params.firstname, params.email,
-    '', '', '', '', '',   // udf1–udf5
-    '', '', '', '', '',   // blank fields
+    '', '', '', '', '',
+    '', '', '', '', '',
     params.salt,
   ].join('|')
   return crypto.createHash('sha512').update(str).digest('hex')
+}
+
+function makeSupabase() {
+  const cookieStore = cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get:    (name) => cookieStore.get(name)?.value,
+        set:    () => {},
+        remove: () => {},
+      },
+    }
+  )
 }
 
 export async function POST(req: NextRequest) {
@@ -49,9 +61,8 @@ export async function POST(req: NextRequest) {
     let phone  = bodyPhone  ?? ''
     let userId = bodyUserId ?? ''
 
-    // Fallback: pull user from session (dashboard flow where fields may be empty)
     if (!email || !userId) {
-      const supabase = createRouteHandlerClient({ cookies })
+      const supabase = makeSupabase()
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         userId = userId || user.id
@@ -73,8 +84,7 @@ export async function POST(req: NextRequest) {
       salt: MERCHANT_SALT,
     })
 
-    // Persist pending order
-    const supabase = createRouteHandlerClient({ cookies })
+    const supabase = makeSupabase()
     await supabase.from('payment_orders').insert({
       txnid, user_id: userId, plan_id: planId,
       billing, amount: Number(amountStr), plan_name: planName,

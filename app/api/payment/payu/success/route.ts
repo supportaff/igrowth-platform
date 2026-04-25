@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// Same single PAYU_SALT var — only swap VALUE when going live
 const MERCHANT_SALT = process.env.PAYU_SALT!
 const BASE_URL      = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
@@ -21,13 +20,28 @@ function verifyHash(params: Record<string, string>): boolean {
   return computed === params.hash
 }
 
+function makeSupabase() {
+  const cookieStore = cookies()
+  return createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      cookies: {
+        get:    (name) => cookieStore.get(name)?.value,
+        set:    () => {},
+        remove: () => {},
+      },
+    }
+  )
+}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData()
   const params: Record<string, string> = {}
   formData.forEach((v, k) => { params[k] = String(v) })
 
   const isValid  = verifyHash(params)
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = makeSupabase()
 
   const { data: order } = await supabase
     .from('payment_orders').select()
