@@ -3,12 +3,19 @@ import crypto from 'crypto'
 import { createClient } from '@supabase/supabase-js'
 
 const MERCHANT_SALT = process.env.PAYU_SALT!
-const BASE_URL      = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 )
+
+// Always derive base URL from the incoming request — never rely on env var
+// because PayU POSTs to your production domain but BASE_URL may still be localhost
+function getBaseUrl(req: NextRequest): string {
+  const proto = req.headers.get('x-forwarded-proto') ?? 'https'
+  const host  = req.headers.get('x-forwarded-host') ?? req.headers.get('host') ?? 'localhost:3000'
+  return `${proto}://${host}`
+}
 
 function verifyHash(params: Record<string, string>): boolean {
   const str = [
@@ -24,6 +31,8 @@ function verifyHash(params: Record<string, string>): boolean {
 }
 
 export async function POST(req: NextRequest) {
+  const BASE_URL = getBaseUrl(req)
+
   const formData = await req.formData()
   const params: Record<string, string> = {}
   formData.forEach((v, k) => { params[k] = String(v) })
@@ -31,10 +40,14 @@ export async function POST(req: NextRequest) {
   // Verify hash integrity
   const isValid = verifyHash(params)
   if (!isValid || params.status !== 'success') {
-    // Mark order failed
     await supabase.from('payment_orders')
-      .update({ status: 'failed', payu_response: params })
+      .update({
+        status:         'failed',
+        payu_response:  params,
+        failure_reason: 'Hash verification failed or status not success',
+      })
       .eq('txnid', params.txnid)
+
     return NextResponse.redirect(
       `${BASE_URL}/payment/failed?txnid=${params.txnid}&reason=${encodeURIComponent('Payment verification failed')}`,
       303
@@ -42,12 +55,17 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch original order
-  const { data: order } = await supabase
-    .from('payment_orders').select()
-    .eq('txnid', params.txnid).single()
+  const { data: order, error: orderErr } = await supabase
+    .from('payment_orders')
+    .select()
+    .eq('txnid', params.txnid)
+    .single()
 
-  if (!order) {
-    return NextResponse.redirect(`${BASE_URL}/payment/failed?reason=Order+not+found`, 303)
+  if (orderErr || !order) {
+    return NextResponse.redirect(
+      `${BASE_URL}/payment/failed?reason=${encodeURIComponent('Order not found')}`,
+      303
+    )
   }
 
   // Calculate subscription expiry
@@ -59,23 +77,28 @@ export async function POST(req: NextRequest) {
     expiresAt.setMonth(expiresAt.getMonth() + 1)
   }
 
-  // Upsert subscription — this is what grants the user their plan
-  await supabase.from('subscriptions').upsert(
+  // Upsert subscription — grants the user their plan
+  const { error: subErr } = await supabase.from('subscriptions').upsert(
     {
       user_id:       order.user_id,
-      plan_id:       order.plan_id,       // 'pro'
-      billing:       order.billing,       // 'monthly' | 'annual'
+      plan_id:       order.plan_id,
+      billing:       order.billing,
       status:        'active',
       started_at:    now.toISOString(),
       expires_at:    expiresAt.toISOString(),
       payu_txnid:    params.txnid,
       payu_mihpayid: params.mihpayid ?? null,
-      amount_paid:   order.amount,
+      amount_paid:   Number(order.amount),
     },
     { onConflict: 'user_id' }
   )
 
-  // Update order as success
+  if (subErr) {
+    console.error('[PayU success] subscription upsert failed:', subErr)
+    // Still redirect to success — order is paid, plan will be fixed manually
+  }
+
+  // Mark order as success
   await supabase.from('payment_orders')
     .update({
       status:        'success',
@@ -84,7 +107,6 @@ export async function POST(req: NextRequest) {
     })
     .eq('txnid', params.txnid)
 
-  // Redirect to success page
   return NextResponse.redirect(
     `${BASE_URL}/payment/success?plan=${order.plan_id}&billing=${order.billing}&txnid=${params.txnid}`,
     303
