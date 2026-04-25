@@ -56,6 +56,38 @@ const triggerIcon: Record<TriggerType, React.ElementType> = {
 
 function uid() { return Math.random().toString(36).slice(2, 9) }
 
+// ─── Dark-theme styles for modal inputs ───────────────────
+const darkInput: React.CSSProperties = {
+  width: '100%',
+  background: '#1a1a1a',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 12,
+  padding: '10px 16px',
+  fontSize: 14,
+  color: '#ffffff',
+  outline: 'none',
+}
+const darkSelect: React.CSSProperties = {
+  background: '#1a1a1a',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 8,
+  padding: '6px 8px',
+  fontSize: 12,
+  color: '#ffffff',
+  outline: 'none',
+}
+const darkTextarea: React.CSSProperties = {
+  width: '100%',
+  background: '#1a1a1a',
+  border: '1px solid rgba(255,255,255,0.12)',
+  borderRadius: 12,
+  padding: '12px 16px',
+  fontSize: 14,
+  color: '#ffffff',
+  outline: 'none',
+  resize: 'vertical' as const,
+}
+
 // ─── Builder Modal ─────────────────────────────────────────
 function BuilderModal({ initial, onSave, onClose, userId }: {
   initial: Automation | null; onSave: (a: Automation) => void; onClose: () => void; userId: string
@@ -111,84 +143,135 @@ function BuilderModal({ initial, onSave, onClose, userId }: {
   const canNext = step === 'trigger' ? !!trigger : step === 'conditions' ? true :
     step === 'actions' ? actions.length > 0 && actions.every(a => !ACTION_OPTIONS.find(o => o.value === a.type)?.hasMessage || a.message.trim()) : true
 
-  const inputCls = "w-full bg-white border border-[rgba(0,0,0,0.12)] rounded-xl px-4 py-2.5 text-sm text-black placeholder-[#9ca3af] focus:outline-none focus:border-[rgba(0,0,0,0.3)] transition-all"
-  const selectCls = "bg-white border border-[rgba(0,0,0,0.12)] text-black text-xs rounded-lg px-2 py-1.5 focus:outline-none"
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="relative w-full max-w-2xl bg-white border border-[rgba(0,0,0,0.1)] rounded-3xl shadow-2xl shadow-black/10 overflow-hidden"
-        onClick={e => e.stopPropagation()} style={{ maxHeight: '90vh' }}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(6px)' }} onClick={onClose}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          position: 'relative', width: '100%', maxWidth: 640,
+          background: '#111111',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: 24,
+          boxShadow: '0 24px 64px rgba(0,0,0,0.8)',
+          maxHeight: '90vh',
+          overflow: 'hidden',
+          display: 'flex', flexDirection: 'column',
+        }}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-[rgba(0,0,0,0.08)]">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px', borderBottom: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
           <div>
-            <h2 className="text-base font-bold text-black">{isEdit ? 'Edit Automation' : 'New Automation'}</h2>
-            <p className="text-xs text-[#737373] mt-0.5">Build your automation workflow step by step</p>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#ffffff' }}>{isEdit ? 'Edit Automation' : 'New Automation'}</h2>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Build your automation workflow step by step</p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg text-[#737373] hover:text-black hover:bg-[rgba(0,0,0,0.06)] transition-colors"><X className="w-4 h-4" /></button>
+          <button onClick={onClose} style={{ padding: 6, borderRadius: 8, color: 'rgba(255,255,255,0.4)', background: 'none', border: 'none', cursor: 'pointer' }}
+            onMouseOver={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.06)')}
+            onMouseOut={e => (e.currentTarget.style.background = 'none')}>
+            <X style={{ width: 16, height: 16 }} />
+          </button>
         </div>
 
         {/* Steps */}
-        <div className="flex items-center px-6 py-4 border-b border-[rgba(0,0,0,0.06)] gap-2">
+        <div style={{ display: 'flex', alignItems: 'center', padding: '12px 24px', borderBottom: '1px solid rgba(255,255,255,0.06)', gap: 8, flexShrink: 0 }}>
           {STEPS.map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <button onClick={() => i <= stepIdx ? setStep(s) : null}
-                className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-full transition-all ${
-                  i === stepIdx ? 'bg-[var(--box-purple-bg)] text-[var(--box-purple-text)] border border-[var(--box-purple-border)]' :
-                  i < stepIdx   ? 'text-[var(--green)]' : 'text-[#9ca3af]'
-                }`}>
-                {i < stepIdx ? <Check className="w-3 h-3" /> : <span>{i + 1}</span>}
+            <div key={s} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <button
+                onClick={() => i <= stepIdx ? setStep(s) : undefined}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  fontSize: 12, fontWeight: 500,
+                  padding: '4px 10px', borderRadius: 99,
+                  border: 'none', cursor: i <= stepIdx ? 'pointer' : 'default',
+                  background: i === stepIdx ? 'rgba(255,255,255,0.12)' : 'transparent',
+                  color: i === stepIdx ? '#ffffff' : i < stepIdx ? '#4ade80' : 'rgba(255,255,255,0.3)',
+                  transition: 'all 140ms',
+                }}>
+                {i < stepIdx ? <Check style={{ width: 12, height: 12 }} /> : <span>{i + 1}</span>}
                 {s.charAt(0).toUpperCase() + s.slice(1)}
               </button>
-              {i < STEPS.length - 1 && <ChevronRight className="w-3 h-3 text-[#d1d5db]" />}
+              {i < STEPS.length - 1 && <ChevronRight style={{ width: 12, height: 12, color: 'rgba(255,255,255,0.2)' }} />}
             </div>
           ))}
         </div>
 
         {/* Body */}
-        <div className="overflow-y-auto p-6 space-y-5" style={{ maxHeight: 'calc(90vh - 220px)' }}>
+        <div style={{ overflowY: 'auto', padding: 24, flex: 1, display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {/* Name */}
           <div>
-            <label className="text-xs font-medium text-[#737373] mb-1.5 block">Automation name</label>
-            <input value={name} onChange={e => setName(e.target.value)} placeholder="e.g. DM Pricing Keyword Flow"
-              className={inputCls} />
+            <label style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.5)', marginBottom: 6, display: 'block' }}>Automation name</label>
+            <input
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="e.g. DM Pricing Keyword Flow"
+              style={darkInput}
+            />
           </div>
 
           {step === 'trigger' && (
-            <div className="space-y-3">
-              <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider">Choose Trigger</p>
-              <div className="grid gap-2">
-                {TRIGGER_OPTIONS.map(t => (
-                  <button key={t.value} onClick={() => setTrigger(t.value)}
-                    className={`flex items-center gap-3 p-4 rounded-xl border text-left transition-all ${
-                      trigger === t.value
-                        ? 'bg-[var(--box-purple-bg)] border-[var(--box-purple-border)] text-[var(--box-purple-text)]'
-                        : 'bg-[var(--surface-1)] border-[rgba(0,0,0,0.08)] text-[#404040] hover:bg-[var(--surface-2)] hover:text-black'
-                    }`}>
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      trigger === t.value ? 'bg-[var(--box-purple-border)]' : 'bg-[rgba(0,0,0,0.05)]'
-                    }`}>
-                      <t.icon className="w-4 h-4" />
-                    </div>
-                    <div><p className="text-sm font-semibold">{t.label}</p><p className="text-xs opacity-60 mt-0.5">{t.desc}</p></div>
-                    {trigger === t.value && <Check className="w-4 h-4 ml-auto" />}
-                  </button>
-                ))}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Choose Trigger</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {TRIGGER_OPTIONS.map(t => {
+                  const selected = trigger === t.value
+                  return (
+                    <button key={t.value} onClick={() => setTrigger(t.value)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: 16, borderRadius: 12, textAlign: 'left',
+                        background: selected ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.03)',
+                        border: `1px solid ${selected ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                        cursor: 'pointer', transition: 'all 140ms',
+                        color: '#ffffff',
+                      }}>
+                      <div style={{
+                        width: 32, height: 32, borderRadius: 8,
+                        background: selected ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <t.icon style={{ width: 16, height: 16, color: '#fff' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: '#ffffff' }}>{t.label}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{t.desc}</p>
+                      </div>
+                      {selected && <Check style={{ width: 16, height: 16, color: '#4ade80', flexShrink: 0 }} />}
+                    </button>
+                  )
+                })}
               </div>
               {['dm_keyword', 'post_comment', 'reel_comment'].includes(trigger) && (
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-[#737373] block">Keywords <span className="text-[#9ca3af]">(press Enter to add)</span></label>
-                  <div className="flex gap-2">
-                    <input value={kwInput} onChange={e => setKwInput(e.target.value)}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <label style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.5)', display: 'block' }}>
+                    Keywords <span style={{ color: 'rgba(255,255,255,0.25)' }}>(press Enter to add)</span>
+                  </label>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                    <input
+                      value={kwInput}
+                      onChange={e => setKwInput(e.target.value)}
                       onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addKeyword() } }}
-                      placeholder="e.g. price, info, link" className={inputCls} />
-                    <button onClick={addKeyword} className="px-4 py-2.5 bg-[var(--box-purple-bg)] text-[var(--box-purple-text)] border border-[var(--box-purple-border)] rounded-xl text-sm hover:opacity-80 transition-colors">Add</button>
+                      placeholder="e.g. price, info, link"
+                      style={{ ...darkInput, width: 'auto', flex: 1 }}
+                    />
+                    <button onClick={addKeyword}
+                      style={{
+                        padding: '10px 16px', borderRadius: 12, fontSize: 14,
+                        background: 'rgba(255,255,255,0.1)', color: '#fff',
+                        border: '1px solid rgba(255,255,255,0.15)', cursor: 'pointer',
+                      }}>Add</button>
                   </div>
                   {keywords.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                       {keywords.map(kw => (
-                        <span key={kw} className="flex items-center gap-1.5 text-xs bg-[var(--surface-2)] border border-[rgba(0,0,0,0.08)] text-[#404040] px-2.5 py-1 rounded-full font-mono">
+                        <span key={kw} style={{
+                          display: 'flex', alignItems: 'center', gap: 6, fontSize: 12,
+                          background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)',
+                          color: 'rgba(255,255,255,0.7)', padding: '4px 10px', borderRadius: 99, fontFamily: 'monospace',
+                        }}>
                           &quot;{kw}&quot;
-                          <button onClick={() => setKeywords(p => p.filter(k => k !== kw))} className="text-[#9ca3af] hover:text-red-500 transition-colors"><X className="w-3 h-3" /></button>
+                          <button onClick={() => setKeywords(p => p.filter(k => k !== kw))}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 0, display: 'flex' }}>
+                            <X style={{ width: 12, height: 12 }} />
+                          </button>
                         </span>
                       ))}
                     </div>
@@ -199,129 +282,173 @@ function BuilderModal({ initial, onSave, onClose, userId }: {
           )}
 
           {step === 'conditions' && (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider">Conditions <span className="normal-case">(optional)</span></p>
-                <button onClick={addCondition} className="flex items-center gap-1 text-xs text-[var(--box-purple-text)] hover:opacity-80 transition-colors"><Plus className="w-3.5 h-3.5" /> Add condition</button>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Conditions <span style={{ textTransform: 'none', fontWeight: 400 }}>(optional)</span></p>
+                <button onClick={addCondition}
+                  style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'rgba(255,255,255,0.6)', background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <Plus style={{ width: 14, height: 14 }} /> Add condition
+                </button>
               </div>
               {conditions.length === 0 && (
-                <div className="p-5 bg-[var(--surface-1)] border border-[rgba(0,0,0,0.08)] rounded-xl text-center">
-                  <p className="text-xs text-[#9ca3af]">No conditions — triggers for everyone.</p>
+                <div style={{ padding: 20, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, textAlign: 'center' }}>
+                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>No conditions — triggers for everyone.</p>
                 </div>
               )}
               {conditions.map(c => (
-                <div key={c.id} className="flex items-center gap-2 bg-[var(--surface-1)] border border-[rgba(0,0,0,0.08)] rounded-xl p-3">
-                  <select value={c.field} onChange={e => updateCondition(c.id, 'field', e.target.value)} className={selectCls}>
+                <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 12 }}>
+                  <select value={c.field} onChange={e => updateCondition(c.id, 'field', e.target.value)} style={darkSelect}>
                     {FIELD_OPTIONS.map(f => <option key={f} value={f}>{f.replace('_', ' ')}</option>)}
                   </select>
-                  <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)} className={selectCls}>
+                  <select value={c.operator} onChange={e => updateCondition(c.id, 'operator', e.target.value)} style={darkSelect}>
                     {OPERATOR_OPTIONS.map(o => <option key={o} value={o}>{o.replace('_', ' ')}</option>)}
                   </select>
                   <input value={c.value} onChange={e => updateCondition(c.id, 'value', e.target.value)} placeholder="value"
-                    className="flex-1 bg-white border border-[rgba(0,0,0,0.1)] text-black text-xs rounded-lg px-3 py-1.5 placeholder-[#9ca3af] focus:outline-none" />
-                  <button onClick={() => setConditions(p => p.filter(x => x.id !== c.id))} className="text-[#9ca3af] hover:text-red-500 transition-colors"><X className="w-3.5 h-3.5" /></button>
+                    style={{ flex: 1, background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 12, borderRadius: 8, padding: '6px 12px', outline: 'none' }} />
+                  <button onClick={() => setConditions(p => p.filter(x => x.id !== c.id))}
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4 }}>
+                    <X style={{ width: 14, height: 14 }} />
+                  </button>
                 </div>
               ))}
             </div>
           )}
 
           {step === 'actions' && (
-            <div className="space-y-4">
-              <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider">Actions <span className="normal-case">(executed in order)</span></p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Actions <span style={{ textTransform: 'none', fontWeight: 400 }}>(executed in order)</span></p>
               {actions.map((a, idx) => {
                 const opt = ACTION_OPTIONS.find(o => o.value === a.type)!
                 return (
-                  <div key={a.id} className="bg-[var(--surface-1)] border border-[rgba(0,0,0,0.08)] rounded-xl p-4 space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="w-5 h-5 rounded-full bg-[var(--box-purple-bg)] text-[var(--box-purple-text)] text-xs flex items-center justify-center font-bold flex-shrink-0 border border-[var(--box-purple-border)]">{idx + 1}</span>
+                  <div key={a.id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{
+                        width: 20, height: 20, borderRadius: '50%',
+                        background: 'rgba(255,255,255,0.1)', color: '#fff',
+                        fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                        border: '1px solid rgba(255,255,255,0.15)',
+                      }}>{idx + 1}</span>
                       <select value={a.type} onChange={e => updateAction(a.id, 'type', e.target.value as ActionType)}
-                        className="flex-1 bg-white border border-[rgba(0,0,0,0.1)] text-black text-sm rounded-lg px-3 py-2 focus:outline-none">
+                        style={{ ...darkSelect, flex: 1, fontSize: 14, padding: '8px 12px' }}>
                         {ACTION_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                       </select>
-                      {actions.length > 1 && <button onClick={() => removeAction(a.id)} className="text-[#9ca3af] hover:text-red-500 transition-colors"><X className="w-4 h-4" /></button>}
+                      {actions.length > 1 && (
+                        <button onClick={() => removeAction(a.id)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'rgba(255,255,255,0.3)', padding: 4 }}>
+                          <X style={{ width: 16, height: 16 }} />
+                        </button>
+                      )}
                     </div>
-                    <p className="text-xs text-[#737373]">{opt.desc}</p>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-[#737373]">Delay:</span>
-                      <input type="number" min={0} max={10080} value={a.delay} onChange={e => updateAction(a.id, 'delay', Number(e.target.value))}
-                        className="w-20 bg-white border border-[rgba(0,0,0,0.1)] text-black text-xs rounded-lg px-2 py-1.5 focus:outline-none text-center" />
-                      <span className="text-xs text-[#9ca3af]">minutes after trigger</span>
+                    <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{opt.desc}</p>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>Delay:</span>
+                      <input type="number" min={0} max={10080} value={a.delay}
+                        onChange={e => updateAction(a.id, 'delay', Number(e.target.value))}
+                        style={{ width: 80, background: '#1a1a1a', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', fontSize: 12, borderRadius: 8, padding: '6px 8px', outline: 'none', textAlign: 'center' }} />
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>minutes after trigger</span>
                     </div>
                     {opt.hasMessage && (
                       <div>
-                        <label className="text-xs text-[#737373] mb-1.5 block">Message <span className="text-[#9ca3af]">— use {'{{name}}'} for personalization</span></label>
-                        <textarea value={a.message} onChange={e => updateAction(a.id, 'message', e.target.value)} rows={3} placeholder="Type your message..."
-                          className="w-full bg-white border border-[rgba(0,0,0,0.1)] text-black text-sm rounded-xl px-4 py-3 placeholder-[#9ca3af] focus:outline-none resize-none transition-all" />
-                        <p className="text-xs text-[#9ca3af] mt-1">{a.message.length}/1000 chars</p>
+                        <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6, display: 'block' }}>
+                          Message <span style={{ color: 'rgba(255,255,255,0.25)' }}>— use {'{{name}}'} for personalization</span>
+                        </label>
+                        <textarea value={a.message} onChange={e => updateAction(a.id, 'message', e.target.value)} rows={3}
+                          placeholder="Type your message..."
+                          style={darkTextarea} />
+                        <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>{a.message.length}/1000 chars</p>
                       </div>
                     )}
                     {opt.hasTag && (
                       <div>
-                        <label className="text-xs text-[#737373] mb-1.5 block">Tag name</label>
-                        <input value={a.tag ?? ''} onChange={e => updateAction(a.id, 'tag', e.target.value)} placeholder="e.g. Hot Lead" className={inputCls} />
+                        <label style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginBottom: 6, display: 'block' }}>Tag name</label>
+                        <input value={a.tag ?? ''} onChange={e => updateAction(a.id, 'tag', e.target.value)}
+                          placeholder="e.g. Hot Lead" style={darkInput} />
                       </div>
                     )}
                   </div>
                 )
               })}
-              <button onClick={addAction} className="w-full flex items-center justify-center gap-2 py-3 border border-dashed border-[rgba(0,0,0,0.15)] rounded-xl text-xs text-[#9ca3af] hover:text-black hover:border-[rgba(0,0,0,0.3)] transition-colors">
-                <Plus className="w-3.5 h-3.5" /> Add another action
+              <button onClick={addAction}
+                style={{
+                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                  padding: 12, border: '1px dashed rgba(255,255,255,0.15)', borderRadius: 12,
+                  fontSize: 12, color: 'rgba(255,255,255,0.35)', background: 'none', cursor: 'pointer', transition: 'all 140ms',
+                }}
+                onMouseOver={e => { e.currentTarget.style.color = '#fff'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)' }}
+                onMouseOut={e => { e.currentTarget.style.color = 'rgba(255,255,255,0.35)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)' }}>
+                <Plus style={{ width: 14, height: 14 }} /> Add another action
               </button>
             </div>
           )}
 
           {step === 'review' && (
-            <div className="space-y-4">
-              <p className="text-xs font-semibold text-[#9ca3af] uppercase tracking-wider">Review & Save</p>
-              <div className="space-y-3">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <p style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.3)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>Review & Save</p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {[
-                  { label:'Name', content: <p className="text-sm font-semibold text-black">{name || '(untitled)'}</p> },
-                  { label:'Trigger', content: <p className="text-sm font-semibold text-black">{TRIGGER_OPTIONS.find(t => t.value === trigger)?.label}</p> },
-                  { label:'Conditions', content: conditions.length === 0 ? <p className="text-xs text-[#9ca3af]">None</p> : conditions.map(c => <p key={c.id} className="text-xs text-[#404040] font-mono">{c.field} {c.operator} &quot;{c.value}&quot;</p>) },
-                  { label:`Actions (${actions.length})`, content: actions.map((a,i) => (
-                    <div key={a.id} className="flex items-start gap-2 mb-1">
-                      <span className="text-xs text-[var(--box-purple-text)] font-bold mt-0.5">{i+1}.</span>
-                      <div><p className="text-xs font-medium text-black">{ACTION_OPTIONS.find(o => o.value === a.type)?.label}</p>{a.message && <p className="text-xs text-[#737373] mt-0.5 line-clamp-2">{a.message}</p>}</div>
+                  { label: 'Name', content: <p style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{name || '(untitled)'}</p> },
+                  { label: 'Trigger', content: <p style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{TRIGGER_OPTIONS.find(t => t.value === trigger)?.label}</p> },
+                  { label: 'Conditions', content: conditions.length === 0
+                    ? <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)' }}>None</p>
+                    : conditions.map(c => <p key={c.id} style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontFamily: 'monospace' }}>{c.field} {c.operator} &quot;{c.value}&quot;</p>) },
+                  { label: `Actions (${actions.length})`, content: actions.map((a, i) => (
+                    <div key={a.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', fontWeight: 700, marginTop: 2 }}>{i+1}.</span>
+                      <div>
+                        <p style={{ fontSize: 12, fontWeight: 500, color: '#fff' }}>{ACTION_OPTIONS.find(o => o.value === a.type)?.label}</p>
+                        {a.message && <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{a.message.slice(0, 80)}{a.message.length > 80 ? '…' : ''}</p>}
+                      </div>
                     </div>
                   )) },
                 ].map(row => (
-                  <div key={row.label} className="bg-[var(--surface-1)] border border-[rgba(0,0,0,0.08)] rounded-xl p-4">
-                    <p className="text-xs text-[#737373] mb-1">{row.label}</p>
+                  <div key={row.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12, padding: 16 }}>
+                    <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginBottom: 6 }}>{row.label}</p>
                     {row.content}
                   </div>
                 ))}
               </div>
               {!name && (
-                <div className="flex items-center gap-2 p-3 bg-[var(--box-amber-bg)] border border-[var(--box-amber-border)] rounded-xl">
-                  <AlertCircle className="w-4 h-4 text-[var(--box-amber-text)] flex-shrink-0" />
-                  <p className="text-xs text-[var(--box-amber-text)]">Add a name so you can find this automation later.</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)', borderRadius: 12 }}>
+                  <AlertCircle style={{ width: 16, height: 16, color: '#fbbf24', flexShrink: 0 }} />
+                  <p style={{ fontSize: 12, color: '#fbbf24' }}>Add a name so you can find this automation later.</p>
                 </div>
               )}
-              <div className="flex items-center gap-2 p-3 bg-[var(--box-blue-bg)] border border-[var(--box-blue-border)] rounded-xl">
-                <Wifi className="w-4 h-4 text-[var(--box-blue-text)] flex-shrink-0" />
-                <p className="text-xs text-[var(--box-blue-text)]">This automation will be saved to your account and persist across sessions.</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 12, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.2)', borderRadius: 12 }}>
+                <Wifi style={{ width: 16, height: 16, color: '#60a5fa', flexShrink: 0 }} />
+                <p style={{ fontSize: 12, color: '#60a5fa' }}>This automation will be saved to your account and persist across sessions.</p>
               </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-6 py-4 border-t border-[rgba(0,0,0,0.08)]">
-          <button onClick={() => stepIdx > 0 ? setStep(STEPS[stepIdx - 1]) : onClose()} className="px-4 py-2 text-sm text-[#737373] hover:text-black transition-colors">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 24px', borderTop: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }}>
+          <button onClick={() => stepIdx > 0 ? setStep(STEPS[stepIdx - 1]) : onClose()}
+            style={{ padding: '8px 16px', fontSize: 14, color: 'rgba(255,255,255,0.5)', background: 'none', border: 'none', cursor: 'pointer' }}>
             {stepIdx === 0 ? 'Cancel' : '← Back'}
           </button>
           {step === 'review' ? (
             <button onClick={handleSave} disabled={saving}
-              className="flex items-center gap-2 px-6 py-2.5 bg-black text-white text-sm font-semibold rounded-xl hover:bg-black/80 transition-all shadow-sm disabled:opacity-50">
-              {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 24px', background: saving ? 'rgba(255,255,255,0.4)' : '#fff',
+                color: '#000', fontSize: 14, fontWeight: 700, borderRadius: 12,
+                border: 'none', cursor: saving ? 'not-allowed' : 'pointer',
+                transition: 'opacity 140ms',
+              }}>
+              {saving ? <Loader2 style={{ width: 16, height: 16, animation: 'spin 1s linear infinite' }} /> : <Check style={{ width: 16, height: 16 }} />}
               {saving ? 'Saving...' : 'Save automation'}
             </button>
           ) : (
             <button onClick={() => canNext && setStep(STEPS[stepIdx + 1])} disabled={!canNext}
-              className={`flex items-center gap-2 px-6 py-2.5 text-sm font-semibold rounded-xl transition-all ${
-                canNext ? 'bg-black text-white hover:bg-black/80 shadow-sm' : 'bg-[var(--surface-2)] text-[#9ca3af] cursor-not-allowed'
-              }`}>
-              Next <ChevronRight className="w-4 h-4" />
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '10px 24px', fontSize: 14, fontWeight: 700, borderRadius: 12,
+                border: 'none', cursor: canNext ? 'pointer' : 'not-allowed', transition: 'opacity 140ms',
+                background: canNext ? '#fff' : 'rgba(255,255,255,0.1)',
+                color: canNext ? '#000' : 'rgba(255,255,255,0.3)',
+              }}>
+              Next <ChevronRight style={{ width: 16, height: 16 }} />
             </button>
           )}
         </div>
@@ -386,109 +513,119 @@ export default function AutomationsPage() {
 
       {/* Toast */}
       {toastMsg && (
-        <div className="fixed top-4 right-4 z-50 flex items-center gap-2 bg-[var(--box-green-bg)] border border-[var(--box-green-border)] text-[var(--box-green-text)] text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg">
-          <Check className="w-3.5 h-3.5" /> {toastMsg}
+        <div style={{
+          position: 'fixed', top: 16, right: 16, zIndex: 50,
+          display: 'flex', alignItems: 'center', gap: 8,
+          background: 'rgba(74,222,128,0.12)', border: '1px solid rgba(74,222,128,0.25)',
+          color: '#4ade80', fontSize: 12, fontWeight: 500,
+          padding: '10px 16px', borderRadius: 12, boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
+        }}>
+          <Check style={{ width: 14, height: 14 }} /> {toastMsg}
         </div>
       )}
 
       {/* Webhook banner */}
-      <div className="flex items-start gap-3 p-4 bg-[var(--box-blue-bg)] border border-[var(--box-blue-border)] rounded-2xl">
-        <Wifi className="w-4 h-4 text-[var(--box-blue-text)] flex-shrink-0 mt-0.5" />
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, padding: 16, background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.15)', borderRadius: 16 }}>
+        <Wifi style={{ width: 16, height: 16, color: '#60a5fa', flexShrink: 0, marginTop: 2 }} />
         <div>
-          <p className="text-xs font-semibold text-[var(--box-blue-text)]">Webhook URL for Meta App Dashboard</p>
-          <p className="text-xs text-[#404040] mt-0.5 font-mono break-all">https://igrowth-platform.vercel.app/api/instagram/webhook</p>
-          <p className="text-xs text-[#737373] mt-1">Verify Token: <span className="font-mono text-[var(--box-blue-text)]">igrowth_verify_2026</span> · Subscribe to: <span className="font-mono">messages, comments</span></p>
+          <p style={{ fontSize: 12, fontWeight: 600, color: '#60a5fa' }}>Webhook URL for Meta App Dashboard</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', marginTop: 2, fontFamily: 'monospace', wordBreak: 'break-all' }}>https://igrowth-platform.vercel.app/api/instagram/webhook</p>
+          <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4 }}>Verify Token: <span style={{ fontFamily: 'monospace', color: '#60a5fa' }}>igrowth_verify_2026</span> · Subscribe to: <span style={{ fontFamily: 'monospace' }}>messages, comments, reel_comments</span></p>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
         {[
-          { label: 'Active Flows',     value: loading ? '—' : active,              bg: 'var(--box-green-bg)',  border: 'var(--box-green-border)',  text: 'var(--box-green-text)' },
-          { label: 'Total Runs',       value: loading ? '—' : totalRuns,           bg: 'var(--box-purple-bg)', border: 'var(--box-purple-border)', text: 'var(--box-purple-text)' },
-          { label: 'Avg Success Rate', value: loading ? '—' : `${Math.round(avgRate)}%`, bg: 'var(--box-blue-bg)',   border: 'var(--box-blue-border)',   text: 'var(--box-blue-text)' },
+          { label: 'Active Flows',     value: loading ? '—' : active,              bg: 'rgba(74,222,128,0.08)',  border: 'rgba(74,222,128,0.15)',  text: '#4ade80' },
+          { label: 'Total Runs',       value: loading ? '—' : totalRuns,           bg: 'rgba(255,255,255,0.04)', border: 'rgba(255,255,255,0.1)', text: '#fff' },
+          { label: 'Avg Success Rate', value: loading ? '—' : `${Math.round(avgRate)}%`, bg: 'rgba(96,165,250,0.08)',  border: 'rgba(96,165,250,0.15)',  text: '#60a5fa' },
         ].map(s => (
-          <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}` }} className="rounded-2xl p-5">
-            <div style={{ fontSize:'24px', fontWeight:800, color: s.text, fontVariantNumeric:'tabular-nums' }} className="mb-1">{s.value}</div>
-            <div style={{ fontSize:'12px', color:'var(--text-muted)' }}>{s.label}</div>
+          <div key={s.label} style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 16, padding: 20 }}>
+            <div style={{ fontSize: 24, fontWeight: 800, color: s.text, fontVariantNumeric: 'tabular-nums', marginBottom: 4 }}>{s.value}</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>{s.label}</div>
           </div>
         ))}
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-black">All Automations</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <h2 style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>All Automations</h2>
         <button onClick={() => { setEditTarget(null); setShowBuilder(true) }}
-          className="flex items-center gap-1.5 bg-black text-white text-xs font-semibold px-3 py-2 rounded-xl hover:bg-black/80 transition-all shadow-sm">
-          <Plus className="w-3.5 h-3.5" /> New automation
+          style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            background: '#fff', color: '#000', fontSize: 12, fontWeight: 700,
+            padding: '8px 14px', borderRadius: 12, border: 'none', cursor: 'pointer',
+          }}>
+          <Plus style={{ width: 14, height: 14 }} /> New automation
         </button>
       </div>
 
       {/* Loading */}
       {loading && (
-        <div className="flex items-center justify-center py-16 gap-3">
-          <Loader2 className="w-5 h-5 text-[#737373] animate-spin" />
-          <p className="text-sm text-[#737373]">Loading automations...</p>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '64px 0', gap: 12 }}>
+          <Loader2 style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.4)', animation: 'spin 1s linear infinite' }} />
+          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)' }}>Loading automations...</p>
         </div>
       )}
 
       {/* List */}
       {!loading && (
-        <div className="space-y-3">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           {items.map(a => {
             const TIcon = triggerIcon[a.trigger] ?? Zap
             const ss = statusStyle[a.status]
             return (
-              <div key={a.id} style={{ background:'#ffffff', border:'1px solid rgba(0,0,0,0.08)' }}
-                className="rounded-2xl p-5 hover:border-[rgba(0,0,0,0.16)] transition-colors shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div style={{ background:'var(--box-purple-bg)', border:'1px solid var(--box-purple-border)' }}
-                    className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <TIcon className="w-4 h-4" style={{ color:'var(--box-purple-text)' }} />
+              <div key={a.id}
+                style={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 16, padding: 20 }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', width: 40, height: 40, borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                    <TIcon style={{ width: 16, height: 16, color: 'rgba(255,255,255,0.7)' }} />
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-3">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
                       <div>
-                        <p className="text-sm font-semibold text-black">{a.name}</p>
-                        <p className="text-xs text-[#737373] mt-0.5">{a.trigger_label} → {a.actions?.length ?? 0} action{(a.actions?.length ?? 0) !== 1 ? 's' : ''}</p>
+                        <p style={{ fontSize: 14, fontWeight: 600, color: '#fff' }}>{a.name}</p>
+                        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>{a.trigger_label} → {a.actions?.length ?? 0} action{(a.actions?.length ?? 0) !== 1 ? 's' : ''}</p>
                         {(a.keywords?.length ?? 0) > 0 && (
-                          <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
                             {a.keywords.slice(0, 4).map(k => (
-                              <span key={k} style={{ background:'var(--surface-2)', border:'1px solid rgba(0,0,0,0.08)' }}
-                                className="text-xs text-[#404040] px-2 py-0.5 rounded-full font-mono">&quot;{k}&quot;</span>
+                              <span key={k} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)', fontSize: 11, color: 'rgba(255,255,255,0.5)', padding: '2px 8px', borderRadius: 99, fontFamily: 'monospace' }}>&quot;{k}&quot;</span>
                             ))}
-                            {a.keywords.length > 4 && <span className="text-xs text-[#9ca3af]">+{a.keywords.length - 4} more</span>}
+                            {a.keywords.length > 4 && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>+{a.keywords.length - 4} more</span>}
                           </div>
                         )}
                       </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span style={{ background: ss.bg, color: ss.text, border: `1px solid ${ss.border}` }}
-                          className="text-xs px-2 py-0.5 rounded-full">
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                        <span style={{ background: ss.bg, color: ss.text, border: `1px solid ${ss.border}`, fontSize: 11, padding: '2px 8px', borderRadius: 99 }}>
                           {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
                         </span>
-                        <button onClick={() => toggleStatus(a.id, a.status)} aria-label="Toggle">
-                          {a.status === 'active' ? <ToggleRight className="w-5 h-5 text-[var(--green)]" /> : <ToggleLeft className="w-5 h-5 text-[#9ca3af]" />}
+                        <button onClick={() => toggleStatus(a.id, a.status)} aria-label="Toggle" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}>
+                          {a.status === 'active'
+                            ? <ToggleRight style={{ width: 20, height: 20, color: '#4ade80' }} />
+                            : <ToggleLeft  style={{ width: 20, height: 20, color: 'rgba(255,255,255,0.25)' }} />}
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4 mt-3 flex-wrap">
-                      <span className="text-xs text-[#9ca3af]">{a.runs} runs</span>
-                      {(a.runs ?? 0) > 0 && <span className="text-xs text-[#9ca3af]">{a.success_rate}% success</span>}
-                      <span className="text-xs text-[#9ca3af]">Last: {a.last_run ? new Date(a.last_run).toLocaleDateString() : 'Never'}</span>
-                      <div className="flex items-center gap-2 ml-auto">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{a.runs} runs</span>
+                      {(a.runs ?? 0) > 0 && <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>{a.success_rate}% success</span>}
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)' }}>Last: {a.last_run ? new Date(a.last_run).toLocaleDateString() : 'Never'}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginLeft: 'auto' }}>
                         <button onClick={() => { setEditTarget(a); setShowBuilder(true) }}
-                          className="p-1.5 rounded-lg text-[#9ca3af] hover:text-black hover:bg-[rgba(0,0,0,0.06)] transition-colors" aria-label="Edit">
-                          <Edit2 className="w-3.5 h-3.5" />
+                          style={{ padding: 6, borderRadius: 8, color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          aria-label="Edit">
+                          <Edit2 style={{ width: 14, height: 14 }} />
                         </button>
                         <button onClick={() => setDeleteId(a.id)}
-                          className="p-1.5 rounded-lg text-[#9ca3af] hover:text-red-500 hover:bg-red-50 transition-colors" aria-label="Delete">
-                          <Trash2 className="w-3.5 h-3.5" />
+                          style={{ padding: 6, borderRadius: 8, color: 'rgba(255,255,255,0.3)', background: 'none', border: 'none', cursor: 'pointer' }}
+                          aria-label="Delete">
+                          <Trash2 style={{ width: 14, height: 14 }} />
                         </button>
                         {a.status === 'draft' && (
                           <button onClick={() => toggleStatus(a.id, 'draft')}
-                            style={{ background:'var(--box-green-bg)', color:'var(--box-green-text)', border:'1px solid var(--box-green-border)' }}
-                            className="flex items-center gap-1 text-xs px-2 py-1 rounded-lg hover:opacity-80 transition-colors">
-                            <Play className="w-3 h-3" /> Activate
+                            style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, padding: '4px 8px', borderRadius: 8, background: 'rgba(74,222,128,0.08)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.2)', cursor: 'pointer' }}>
+                            <Play style={{ width: 12, height: 12 }} /> Activate
                           </button>
                         )}
                       </div>
@@ -500,12 +637,13 @@ export default function AutomationsPage() {
           })}
 
           {items.length === 0 && !loading && (
-            <div className="text-center py-16">
-              <Zap className="w-10 h-10 text-[#d1d5db] mx-auto mb-3" />
-              <p className="text-sm font-medium text-[#737373]">No automations yet</p>
-              <p className="text-xs text-[#9ca3af] mt-1">Create your first automation to start capturing leads on autopilot.</p>
-              <button onClick={() => setShowBuilder(true)} className="mt-4 flex items-center gap-2 mx-auto bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:bg-black/80 transition-all">
-                <Plus className="w-3.5 h-3.5" /> Create first automation
+            <div style={{ textAlign: 'center', padding: '64px 0' }}>
+              <Zap style={{ width: 40, height: 40, color: 'rgba(255,255,255,0.1)', margin: '0 auto 12px' }} />
+              <p style={{ fontSize: 14, fontWeight: 500, color: 'rgba(255,255,255,0.4)' }}>No automations yet</p>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.25)', marginTop: 4 }}>Create your first automation to start capturing leads on autopilot.</p>
+              <button onClick={() => setShowBuilder(true)}
+                style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 8, background: '#fff', color: '#000', fontSize: 12, fontWeight: 700, padding: '10px 20px', borderRadius: 12, border: 'none', cursor: 'pointer', margin: '16px auto 0' }}>
+                <Plus style={{ width: 14, height: 14 }} /> Create first automation
               </button>
             </div>
           )}
@@ -518,13 +656,15 @@ export default function AutomationsPage() {
       )}
 
       {deleteId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-          <div className="w-full max-w-sm bg-white border border-[rgba(0,0,0,0.1)] rounded-2xl p-6 shadow-xl shadow-black/10">
-            <h3 className="text-base font-bold text-black mb-2">Delete automation?</h3>
-            <p className="text-sm text-[#737373] mb-6">This cannot be undone. All run history will be lost.</p>
-            <div className="flex gap-3">
-              <button onClick={() => setDeleteId(null)} className="flex-1 py-2.5 rounded-xl bg-[var(--surface-2)] text-[#404040] text-sm hover:bg-[var(--surface-3)] transition-colors">Cancel</button>
-              <button onClick={() => handleDelete(deleteId!)} className="flex-1 py-2.5 rounded-xl bg-red-50 text-red-600 border border-red-200 text-sm hover:bg-red-100 transition-colors">Delete</button>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.7)' }}>
+          <div style={{ width: '100%', maxWidth: 360, background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 20, padding: 24, boxShadow: '0 24px 64px rgba(0,0,0,0.8)' }}>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#fff', marginBottom: 8 }}>Delete automation?</h3>
+            <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.4)', marginBottom: 24 }}>This cannot be undone. All run history will be lost.</p>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={() => setDeleteId(null)}
+                style={{ flex: 1, padding: 10, borderRadius: 12, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', fontSize: 14, border: '1px solid rgba(255,255,255,0.1)', cursor: 'pointer' }}>Cancel</button>
+              <button onClick={() => handleDelete(deleteId!)}
+                style={{ flex: 1, padding: 10, borderRadius: 12, background: 'rgba(248,113,113,0.1)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', fontSize: 14, cursor: 'pointer' }}>Delete</button>
             </div>
           </div>
         </div>

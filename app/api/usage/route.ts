@@ -28,11 +28,12 @@ export async function GET() {
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId),
 
+      // FIX: was .eq('is_active', true) — the column is 'status'
       supabase
         .from('automations')
         .select('id', { count: 'exact', head: true })
         .eq('user_id', userId)
-        .eq('is_active', true),
+        .eq('status', 'active'),
     ])
 
     return NextResponse.json({

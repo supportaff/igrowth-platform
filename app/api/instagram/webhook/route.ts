@@ -73,17 +73,30 @@ export async function POST(req: NextRequest) {
         }
       }
 
-      // ── Handle comments ──
+      // ── Handle comments (posts) and reel_comments (Reels) ──
+      // FIX: Meta sends field='comments' for posts and field='reel_comments' for Reels.
+      // Previously only 'comments' was checked, breaking all reel_comment automations.
       const changes = entry.changes ?? []
       for (const change of changes) {
-        if (change.field !== 'comments') continue
+        const isPostComment = change.field === 'comments'
+        const isReelComment = change.field === 'reel_comments'
+        if (!isPostComment && !isReelComment) continue
+
         const commentText = change.value?.text ?? ''
         const commenterId = change.value?.from?.id
         const commentId   = change.value?.id
         if (!commenterId || commenterId === igAccountId) continue
 
+        // Map Meta field name to our trigger type
+        const expectedTrigger = isReelComment ? 'reel_comment' : 'post_comment'
+
         for (const auto of automations) {
-          if (!['post_comment', 'reel_comment'].includes(auto.trigger)) continue
+          // Match specific trigger type, or allow both if automation targets either
+          if (auto.trigger !== expectedTrigger &&
+              !(['post_comment', 'reel_comment'].includes(auto.trigger))) continue
+          // Respect specific trigger selection
+          if (auto.trigger !== expectedTrigger) continue
+
           const keywords: string[] = auto.keywords ?? []
           const matched = keywords.length === 0 || keywords.some((kw: string) =>
             commentText.toLowerCase().includes(kw.toLowerCase())
