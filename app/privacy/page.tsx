@@ -1,123 +1,115 @@
-import Link from 'next/link'
-import { Zap } from 'lucide-react'
-
-export const metadata = {
-  title: 'Privacy Policy — iGrowth',
-  description: 'How iGrowth collects, uses, and protects your data.',
-}
+'use client'
+import { useRouter } from 'next/navigation'
 
 export default function PrivacyPage() {
+  const router = useRouter()
+  const lastUpdated = 'April 25, 2026'
+
   return (
-    <div className="min-h-screen bg-[#0f0f1a] text-white">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 bg-[#0f0f1a]/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" fill="white" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-brand-400 via-brand-300 to-accent-400 bg-clip-text text-transparent">iGrowth</span>
-          </Link>
-          <Link href="/" className="text-sm text-white/60 hover:text-white transition-colors">← Back to Home</Link>
-        </div>
-      </nav>
+    <div className="min-h-screen bg-white text-gray-900">
+      <header className="sticky top-0 z-30 border-b border-gray-100 bg-white">
+        <nav className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4 lg:px-8">
+          <button className="text-xl font-extrabold text-black tracking-tight" onClick={() => router.push('/')}>iGrowth</button>
+          <button className="text-sm text-gray-500 hover:text-black transition-colors" onClick={() => router.push('/')}>← Back to home</button>
+        </nav>
+      </header>
 
-      {/* Content */}
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 pt-32 pb-24">
-        <div className="mb-10">
-          <h1 className="text-4xl font-extrabold mb-3">Privacy Policy</h1>
-          <p className="text-white/40 text-sm">Last updated: April 23, 2026</p>
+      <main className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-extrabold text-black">Privacy Policy</h1>
+          <p className="mt-2 text-sm text-gray-400">Last updated: {lastUpdated}</p>
         </div>
 
-        <div className="space-y-10 text-white/70 leading-relaxed">
+        <div className="space-y-8 text-gray-700 leading-relaxed">
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">1. Information We Collect</h2>
-            <p className="mb-3">When you create an account or use iGrowth, we collect the following types of information:</p>
-            <ul className="space-y-2 list-disc list-inside text-white/60">
-              <li><strong className="text-white/80">Account information</strong> — name, email address, and password when you sign up.</li>
-              <li><strong className="text-white/80">Instagram account data</strong> — username, profile details, DMs, comments, and follower metadata accessed via the Meta/Instagram API, only with your explicit authorization.</li>
-              <li><strong className="text-white/80">Usage data</strong> — how you interact with the platform (pages visited, features used, automation runs).</li>
-              <li><strong className="text-white/80">Payment information</strong> — processed securely through our payment provider (Razorpay/PayU). We do not store card numbers on our servers.</li>
-              <li><strong className="text-white/80">Device & browser data</strong> — IP address, browser type, and operating system for security and analytics.</li>
-            </ul>
+            <h2 className="text-xl font-bold text-black mb-3">1. Introduction</h2>
+            <p>iGrowth (&ldquo;we&rdquo;, &ldquo;our&rdquo;, &ldquo;us&rdquo;) is committed to protecting your personal information. This Privacy Policy explains what data we collect, how we use it, and your rights. By using iGrowth, you agree to this policy.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">2. How We Use Your Information</h2>
-            <ul className="space-y-2 list-disc list-inside text-white/60">
-              <li>To provide and improve the iGrowth platform and its features.</li>
-              <li>To power your automation flows, CRM, and content analytics.</li>
-              <li>To send transactional emails (account alerts, billing receipts).</li>
-              <li>To detect and prevent fraud, abuse, or policy violations.</li>
+            <h2 className="text-xl font-bold text-black mb-3">2. Data We Collect</h2>
+            <div className="space-y-4">
+              <div><h3 className="font-semibold text-gray-900 mb-1">Account Data</h3><p>Name, email address, profile picture, and niche — collected when you sign up via Google OAuth.</p></div>
+              <div><h3 className="font-semibold text-gray-900 mb-1">Instagram Data</h3><p>When you connect your Instagram account, we access: your Instagram username and profile, direct messages (to power automation), media posts and reels (for content analytics), audience insights (for brand deal pitching), and your access token (stored encrypted).</p></div>
+              <div><h3 className="font-semibold text-gray-900 mb-1">Usage Data</h3><p>Pages visited, features used, timestamps, and error logs — used to improve the Service and troubleshoot issues.</p></div>
+              <div><h3 className="font-semibold text-gray-900 mb-1">Billing Data</h3><p>Subscription plan, transaction history, and invoices. We do not store raw payment card numbers — all payments are processed via our payment provider.</p></div>
+            </div>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-black mb-3">3. How We Use Your Data</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li>To provide and operate the Service, including DM automation, brand deal management, and analytics.</li>
+              <li>To send transactional emails (account activity, billing receipts, token expiry warnings).</li>
+              <li>To improve the Service based on usage patterns (aggregated, anonymised).</li>
               <li>To comply with legal obligations.</li>
+              <li>We do not sell your personal data to third parties.</li>
             </ul>
-            <p className="mt-3">We <strong className="text-white/80">do not sell</strong> your personal data to third parties.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">3. Instagram & Meta API Data</h2>
-            <p className="mb-3">iGrowth uses the Meta (Instagram) API to access your account. By connecting your account, you authorize us to:</p>
-            <ul className="space-y-2 list-disc list-inside text-white/60">
-              <li>Read and send DMs on your behalf (only as directed by your automations).</li>
-              <li>Access comment data on your posts for trigger-based automation.</li>
-              <li>Read basic profile and follower information for CRM features.</li>
+            <h2 className="text-xl font-bold text-black mb-3">4. Instagram Data Usage</h2>
+            <p>We access Instagram data solely to provide the features you request. We do not use Instagram data for advertising profiling or share it with third parties beyond what is necessary to operate the Service. We comply with Meta&apos;s Platform Policies at all times. Instagram access tokens are encrypted at rest and auto-refreshed using Instagram&apos;s token refresh mechanism.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-black mb-3">5. Data Retention</h2>
+            <p>We retain your data for as long as your account is active. If you delete your account, we delete all associated personal data within 30 days. Some data may be retained longer as required by law or for fraud prevention.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-black mb-3">6. Data Security</h2>
+            <p>We use industry-standard encryption (TLS in transit, AES-256 at rest) to protect your data. Access tokens are encrypted before storage. We conduct regular security reviews and never log sensitive credentials in plain text.</p>
+          </section>
+
+          <section>
+            <h2 className="text-xl font-bold text-black mb-3">7. Third-Party Services</h2>
+            <p className="mb-3">We use the following third-party services to operate iGrowth:</p>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Google OAuth</strong> — for authentication.</li>
+              <li><strong>Meta / Instagram Graph API</strong> — for Instagram data access.</li>
+              <li><strong>Payment Gateway</strong> — for billing and subscription management.</li>
+              <li><strong>Supabase</strong> — for hosting and data storage.</li>
             </ul>
-            <p className="mt-3">We comply fully with <a href="https://developers.facebook.com/policy/" target="_blank" rel="noopener noreferrer" className="text-brand-400 hover:underline">Meta Platform Policy</a>. You can revoke access at any time from your Instagram settings.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">4. Data Retention</h2>
-            <p>We retain your data for as long as your account is active. If you delete your account, we will delete your personal data within 30 days, except where retention is required by law.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-white mb-3">5. Cookies</h2>
-            <p>We use essential cookies for authentication and session management, and optional analytics cookies to understand usage patterns. You can control cookie preferences through your browser settings.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-white mb-3">6. Data Security</h2>
-            <p>We use industry-standard encryption (TLS/HTTPS), secure token storage, and regular security audits to protect your data. Access to user data is restricted to authorized personnel only.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-white mb-3">7. Your Rights</h2>
-            <p className="mb-3">Depending on your location, you may have the right to:</p>
-            <ul className="space-y-2 list-disc list-inside text-white/60">
-              <li>Access the personal data we hold about you.</li>
-              <li>Request correction of inaccurate data.</li>
-              <li>Request deletion of your data.</li>
-              <li>Object to or restrict processing of your data.</li>
-              <li>Data portability (export your data).</li>
+            <h2 className="text-xl font-bold text-black mb-3">8. Your Rights</h2>
+            <ul className="list-disc pl-6 space-y-2">
+              <li><strong>Access</strong> — request a copy of your personal data.</li>
+              <li><strong>Correction</strong> — update inaccurate or incomplete data.</li>
+              <li><strong>Deletion</strong> — delete your account and all associated data.</li>
+              <li><strong>Portability</strong> — export your data in a machine-readable format.</li>
+              <li><strong>Withdraw consent</strong> — disconnect Instagram or revoke Google OAuth at any time.</li>
             </ul>
-            <p className="mt-3">To exercise any of these rights, email us at <a href="mailto:privacy@igrowth.app" className="text-brand-400 hover:underline">privacy@igrowth.app</a>.</p>
+            <p className="mt-3">To exercise any of these rights, email us at <a href="mailto:support@afforal.com" className="text-black underline font-medium">support@afforal.com</a>.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">8. Third-Party Services</h2>
-            <p>iGrowth integrates with third-party services including Meta/Instagram API, Razorpay/PayU (payments), and Supabase (database). Each service has its own privacy policy and we recommend reviewing them.</p>
+            <h2 className="text-xl font-bold text-black mb-3">9. Cookies</h2>
+            <p>We use cookies and similar technologies for session management and authentication. We do not use third-party advertising cookies.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">9. Changes to This Policy</h2>
-            <p>We may update this Privacy Policy from time to time. We will notify you of significant changes via email or an in-app notice. Continued use of iGrowth after changes constitutes your acceptance of the updated policy.</p>
+            <h2 className="text-xl font-bold text-black mb-3">10. Children&apos;s Privacy</h2>
+            <p>The Service is not directed to children under 18 years of age. We do not knowingly collect data from minors.</p>
           </section>
 
           <section>
-            <h2 className="text-xl font-bold text-white mb-3">10. Contact Us</h2>
-            <p>If you have any questions about this Privacy Policy, please contact us:</p>
-            <div className="mt-3 p-4 bg-white/5 border border-white/10 rounded-xl text-sm">
-              <p>📧 <a href="mailto:privacy@igrowth.app" className="text-brand-400 hover:underline">privacy@igrowth.app</a></p>
-              <p className="mt-1">🏢 iGrowth, Chennai, Tamil Nadu, India</p>
-            </div>
+            <h2 className="text-xl font-bold text-black mb-3">11. Changes to this Policy</h2>
+            <p>We may update this Privacy Policy periodically. We will notify you of material changes via email or in-app notice.</p>
           </section>
-        </div>
 
-        <div className="mt-16 pt-8 border-t border-white/10 flex gap-6 text-sm text-white/40">
-          <Link href="/terms" className="hover:text-white/70 transition-colors">Terms of Service</Link>
-          <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
+          <section>
+            <h2 className="text-xl font-bold text-black mb-3">12. Contact Us</h2>
+            <p>For any privacy-related questions, contact us at: <a href="mailto:support@afforal.com" className="text-black underline font-medium">support@afforal.com</a></p>
+          </section>
         </div>
       </main>
+
+      <footer className="mt-10 border-t border-gray-100 py-6 text-center text-sm text-gray-400">
+        © 2026 iGrowth · <a href="mailto:support@afforal.com" className="hover:text-black transition-colors">support@afforal.com</a>
+      </footer>
     </div>
   )
 }
