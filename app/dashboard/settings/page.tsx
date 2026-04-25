@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { User, Bell, Shield, Instagram, Save, Check, ExternalLink, AlertCircle, CheckCircle } from 'lucide-react'
+import { User, Bell, Shield, Instagram, Save, Check, ExternalLink, AlertCircle, CheckCircle, LogOut } from 'lucide-react'
 
 const TABS = [
   { id: 'profile',       label: 'Profile',       icon: User },
@@ -11,7 +11,6 @@ const TABS = [
   { id: 'security',      label: 'Security',      icon: Shield },
 ]
 
-// Instagram Business Login scopes (instagram.com OAuth)
 const INSTAGRAM_OAUTH_SCOPES = [
   'instagram_business_basic',
   'instagram_business_manage_messages',
@@ -21,32 +20,41 @@ const INSTAGRAM_OAUTH_SCOPES = [
 ].join(',')
 
 interface NotifPrefs { notifLeads: boolean; notifDMs: boolean; notifWeekly: boolean }
-interface IGState { connected: boolean; handle: string; followers: number; lastSync: string }
+interface IGSession { connected: boolean; igUserId?: string; connectedAt?: string }
 
 export default function SettingsPage() {
   const searchParams = useSearchParams()
   const { user } = useUser()
 
-  const [activeTab, setActiveTab] = useState(searchParams.get('tab') ?? 'profile')
-  const [saved, setSaved] = useState(false)
-  const [brand, setBrand] = useState('')
-  const [bio, setBio] = useState('')
-  const [notif, setNotif] = useState<NotifPrefs>({ notifLeads: true, notifDMs: true, notifWeekly: false })
-  const [ig, setIg] = useState<IGState>({ connected: false, handle: '', followers: 0, lastSync: '' })
-  const [igLoading, setIgLoading] = useState(false)
+  const [activeTab, setActiveTab]   = useState(searchParams.get('tab') ?? 'profile')
+  const [saved, setSaved]           = useState(false)
+  const [brand, setBrand]           = useState('')
+  const [bio, setBio]               = useState('')
+  const [notif, setNotif]           = useState<NotifPrefs>({ notifLeads: true, notifDMs: true, notifWeekly: false })
+  const [ig, setIg]                 = useState<IGSession>({ connected: false })
+  const [igLoading, setIgLoading]   = useState(true)
+  const [igHandle, setIgHandle]     = useState('')
+  const [disconnecting, setDisconnecting] = useState(false)
 
+  // Load session state from API (not from URL params)
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab) setActiveTab(tab)
-    const connected = searchParams.get('connected')
-    const handle    = searchParams.get('handle')
-    const followers = searchParams.get('followers')
-    if (connected === 'true' && handle) {
-      setIg({ connected: true, handle, followers: Number(followers) || 0, lastSync: 'Just now' })
-      setActiveTab('instagram')
-    }
-    const error = searchParams.get('error')
-    if (error) console.warn('Instagram OAuth error:', error)
+
+    fetch('/api/instagram/session')
+      .then(r => r.json())
+      .then(data => {
+        setIg(data)
+        if (data.connected) {
+          // Fetch handle from insights
+          fetch('/api/instagram/insights')
+            .then(r => r.json())
+            .then(ins => { if (ins.handle) setIgHandle(ins.handle) })
+            .catch(() => {})
+        }
+      })
+      .catch(() => setIg({ connected: false }))
+      .finally(() => setIgLoading(false))
   }, [searchParams])
 
   function handleSave() {
@@ -60,21 +68,24 @@ export default function SettingsPage() {
   }
 
   function handleIGConnect() {
-    setIgLoading(true)
     const appId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID
     if (!appId || appId === 'YOUR_APP_ID') {
-      alert('Instagram App ID is not configured. Please contact support.')
-      setIgLoading(false)
+      alert('Instagram App ID not configured. Check NEXT_PUBLIC_INSTAGRAM_APP_ID env var.')
       return
     }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
     const state = encodeURIComponent(user?.id ?? 'unknown')
-    // Use instagram.com OAuth endpoint for Instagram Business Login
     window.location.href = `https://www.instagram.com/oauth/authorize?force_reauth=true&client_id=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=${INSTAGRAM_OAUTH_SCOPES}&state=${state}`
   }
 
-  function handleIGDisconnect() {
-    setIg({ connected: false, handle: '', followers: 0, lastSync: '' })
+  async function handleIGDisconnect() {
+    setDisconnecting(true)
+    try {
+      await fetch('/api/instagram/session', { method: 'DELETE' })
+    } catch {}
+    setIg({ connected: false })
+    setIgHandle('')
+    setDisconnecting(false)
   }
 
   const saveBtnClass = saved
@@ -83,7 +94,6 @@ export default function SettingsPage() {
 
   return (
     <div className="max-w-2xl space-y-6">
-
       {/* Tab bar */}
       <div className="flex gap-1 bg-white/4 border border-white/8 rounded-2xl p-1.5 overflow-x-auto">
         {TABS.map(({ id, label, icon: Icon }) => (
@@ -141,7 +151,27 @@ export default function SettingsPage() {
         <div className="bg-white/4 border border-white/8 rounded-2xl p-6 space-y-5">
           <h2 className="text-sm font-bold text-white">Instagram Connection</h2>
 
-          {!ig.connected ? (
+          {igLoading ? (
+            <div className="text-xs text-white/30 py-4">Checking connection status…</div>
+          ) : ig.connected ? (
+            <>
+              <div className="p-5 bg-green-500/8 border border-green-500/20 rounded-xl flex items-start gap-3">
+                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-green-300">Connected ✓</p>
+                  <p className="text-xs text-white/40 mt-0.5">
+                    {igHandle ? `@${igHandle}` : `User ID: ${ig.igUserId}`}
+                    {ig.connectedAt && ` · Connected ${new Date(ig.connectedAt).toLocaleDateString()}`}
+                  </p>
+                </div>
+              </div>
+              <button onClick={handleIGDisconnect} disabled={disconnecting}
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm hover:bg-red-500/20 transition-colors disabled:opacity-50">
+                <LogOut className="w-4 h-4" />
+                {disconnecting ? 'Disconnecting…' : 'Disconnect Instagram'}
+              </button>
+            </>
+          ) : (
             <>
               <div className="p-5 bg-amber-500/8 border border-amber-500/20 rounded-xl flex items-start gap-3">
                 <AlertCircle className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
@@ -150,7 +180,6 @@ export default function SettingsPage() {
                   <p className="text-xs text-white/40 mt-0.5">Connect your Instagram Business account to enable DM automations, lead capture, and analytics.</p>
                 </div>
               </div>
-
               <div className="space-y-3">
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Requirements</p>
                 {[
@@ -166,28 +195,13 @@ export default function SettingsPage() {
                   </div>
                 ))}
               </div>
-
-              <button onClick={handleIGConnect} disabled={igLoading}
-                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:opacity-90 transition-all shadow-md shadow-violet-500/20 disabled:opacity-60">
+              <button onClick={handleIGConnect}
+                className="w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-sm font-semibold px-5 py-3 rounded-xl hover:opacity-90 transition-all shadow-md shadow-violet-500/20">
                 <Instagram className="w-4 h-4" />
-                {igLoading ? 'Redirecting to Instagram...' : 'Connect Instagram Business Account'}
-                {!igLoading && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
+                Connect Instagram Business Account
+                <ExternalLink className="w-3.5 h-3.5 ml-1" />
               </button>
               <p className="text-xs text-white/30 text-center">You will be redirected to Instagram to authorize iGrowth. Uses official Meta Instagram Business Login API.</p>
-            </>
-          ) : (
-            <>
-              <div className="p-5 bg-green-500/8 border border-green-500/20 rounded-xl flex items-start gap-3">
-                <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm font-semibold text-green-300">Connected ✓</p>
-                  <p className="text-xs text-white/40 mt-0.5">@{ig.handle} · {ig.followers.toLocaleString()} followers · Last sync: {ig.lastSync}</p>
-                </div>
-              </div>
-              <button onClick={handleIGDisconnect}
-                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm hover:bg-red-500/20 transition-colors">
-                Disconnect Instagram
-              </button>
             </>
           )}
         </div>
