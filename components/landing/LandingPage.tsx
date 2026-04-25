@@ -6,17 +6,17 @@ import {
 } from 'lucide-react'
 
 const features = [
-  { title: 'Instagram DM Automation', description: 'Set up multi-step DM flows triggered by keywords or comments. Reply, ask questions, save answers, and assign tags automatically.', icon: Zap },
-  { title: 'Brand Deal Tracker', description: 'Manage every collab from outreach to payment with deliverables, deadlines, and deal value in one clear pipeline.', icon: Handshake },
-  { title: 'Content Intelligence', description: 'See which reels and posts trigger the most DMs and brand interest so you can post what grows income.', icon: BarChart3 },
-  { title: 'Audience Intelligence', description: 'Use top cities, countries, and age/gender breakdown when pitching brands with confidence.', icon: Globe },
-  { title: 'Collab Calendar', description: 'Keep every deadline in one calendar so you never miss a deliverable or double-book your content slots.', icon: Calendar },
-  { title: 'Unified Conversations', description: 'All your Instagram DMs in one place with full contact history, tags, and quick reply templates.', icon: MessageCircle },
+  { title: 'Instagram DM Conversations', description: 'All your Instagram DMs in one unified inbox. Full chat timeline, contact history, tags, quick-reply templates, and filters — reply to every message without leaving the app.', icon: MessageCircle },
+  { title: 'Brand Deal Pipeline', description: 'Manage every collab from first outreach to final payment. Track deal value, deliverables, deadlines, and payment status across a clean Kanban pipeline.', icon: Handshake },
+  { title: 'DM Automation', description: 'Set up multi-step DM flows triggered by keywords or comments. Auto-reply, ask questions, save answers, and assign tags without lifting a finger.', icon: Zap },
+  { title: 'Collab Planner', description: 'Keep every campaign deadline in one calendar. Track shoot dates, draft approvals, posting deadlines, and payment follow-ups in calendar, kanban, or list view.', icon: Calendar },
+  { title: 'Content Intelligence', description: 'See which reels and posts trigger the most DMs and brand interest so you can post what actually grows income.', icon: BarChart3 },
+  { title: 'Audience Demographics', description: 'Use top cities, countries, and age/gender breakdown when pitching brands — go into every negotiation with real data.', icon: Globe },
 ]
 
 const faqs = [
   { q: 'Does this work with personal Instagram accounts?', a: "No. Instagram's API only supports Business and Creator accounts. Switching is free and takes under 2 minutes inside the Instagram app." },
-  { q: 'Will my account get banned for using this?', a: "No. We use Instagram's official API with rate limits and safety controls built in. No scraping, no bots, and no third-party hacks." },
+  { q: 'Will my account get banned for using this?', a: "No. We use Instagram's official API with rate limits and safety controls built in. No scraping, no bots, no third-party hacks." },
   { q: 'What happens when I hit my plan limit?', a: 'We show you a clear warning and let you upgrade. We never cut off your access without notice.' },
   { q: 'Can I try before connecting Instagram?', a: 'Yes. The full app runs on demo data so you can explore every feature before connecting your account.' },
   { q: 'Is my Instagram token stored securely?', a: "Yes. Access tokens are encrypted at rest and auto-refreshed before expiry so your connection never breaks silently." },
@@ -25,19 +25,23 @@ const faqs = [
 
 const planCards = [
   {
-    name: 'FREE', price: '₹0', period: 'forever', cta: 'Get started free', highlighted: false,
-    points: ['1,000 DMs per month', '500 contacts', '5 active automations', 'Content insights: last 7 days', '5 active brand deals', 'Collab calendar'],
+    name: 'FREE', price: '\u20b90', period: 'forever', cta: 'Get started free',
+    highlighted: false, route: '/signup',
+    points: ['1,000 DMs / month', '500 contacts', '5 active automations', '5 active brand deals', 'Content insights: last 7 days', 'Collab calendar'],
   },
   {
-    name: 'CREATOR', price: '₹499', period: 'per month', cta: 'Start Creator plan', highlighted: true,
-    points: ['Unlimited DMs', 'Unlimited contacts', 'Unlimited automations', 'Full contact CRM', 'Content insights: last 90 days', 'Audience demographics', '25 active brand deals', 'Collab calendar', 'Email support'],
+    name: 'CREATOR', price: '\u20b9499', period: 'per month', cta: 'Start Creator plan',
+    highlighted: true, route: '/signup?plan=creator',
+    points: ['Unlimited DMs', 'Unlimited contacts', 'Unlimited automations', 'Full contact CRM', '25 active brand deals', 'Content insights: last 90 days', 'Audience demographics', 'Collab calendar', 'Email support'],
   },
   {
-    name: 'GROWTH', price: '₹999', period: 'per month', cta: 'Start Growth plan', highlighted: false,
+    name: 'GROWTH', price: '\u20b9999', period: 'per month', cta: 'Start Growth plan',
+    highlighted: false, route: '/signup?plan=growth',
     points: ['Everything in Creator', 'Unlimited brand deals', 'Re-engagement flows', 'Content insights: last 180 days', 'Deal PDF export', 'Priority support', 'Advanced analytics'],
   },
   {
-    name: 'AGENCY', price: '₹2,499', period: 'per month', cta: 'Contact us', highlighted: false,
+    name: 'AGENCY', price: '\u20b92,499', period: 'per month', cta: 'Contact us',
+    highlighted: false, route: 'mailto:support@afforal.com',
     points: ['Up to 10 Instagram accounts', 'Team member access (5 seats)', 'Client workspaces', 'Branded exports & reports', 'Dedicated onboarding', 'SLA-backed support'],
   },
 ]
@@ -45,22 +49,35 @@ const planCards = [
 const howItWorksSteps = [
   'Sign up with Google',
   'Connect your Instagram Business account',
-  'Set up your first automation flow',
-  'Watch conversations and deals organize automatically',
+  'Set up your first automation or brand deal',
+  'Watch conversations and deals organise automatically',
 ]
 
 export default function LandingPage() {
   const router = useRouter()
+
+  const handlePlanCTA = (route: string) => {
+    if (route.startsWith('mailto:')) {
+      window.location.href = route
+    } else {
+      router.push(route)
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white text-gray-900">
       {/* Navbar */}
       <header className="sticky top-0 z-30 border-b border-gray-100 bg-white">
         <nav className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
-          <button className="text-left text-xl font-extrabold text-black tracking-tight"
-            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            iGrowth
+          {/* Logo */}
+          <button
+            className="flex items-center gap-2 text-left"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          >
+            <span className="text-xl font-extrabold text-black tracking-tight">iGrowth</span>
+            <span className="hidden sm:inline-block rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-500 tracking-wide uppercase">by Afforal</span>
           </button>
+
           <div className="hidden items-center gap-6 text-sm font-medium text-gray-600 md:flex">
             <a href="#features" className="hover:text-black transition-colors">Features</a>
             <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
@@ -84,13 +101,13 @@ export default function LandingPage() {
         {/* Hero */}
         <section className="flex flex-col items-center text-center gap-6">
           <span className="inline-flex rounded-full border border-gray-200 bg-gray-50 px-4 py-1.5 text-xs font-semibold text-gray-600 tracking-wide uppercase">
-            The Instagram OS for creators
+            The Instagram OS for creators — by Afforal
           </span>
           <h1 className="text-5xl font-extrabold leading-tight tracking-tight text-black sm:text-6xl lg:text-7xl max-w-4xl">
             Automate DMs. Close brand deals. Grow smarter.
           </h1>
           <p className="max-w-xl text-lg text-gray-500 leading-relaxed">
-            iGrowth is the all-in-one workspace built for Instagram creators — automate conversations, manage brand deals, and track every collab in one clean dashboard.
+            iGrowth is the all-in-one workspace built for Instagram creators — manage conversations, close brand deals, plan campaigns, and track every collab in one clean dashboard.
           </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <button onClick={() => router.push('/signup')}
@@ -102,7 +119,7 @@ export default function LandingPage() {
               See how it works <ChevronRight className="h-4 w-4" />
             </button>
           </div>
-          <p className="text-sm text-gray-400">Free forever plan · No credit card needed · Works with Instagram Business &amp; Creator accounts</p>
+          <p className="text-sm text-gray-400">Free forever plan &middot; No credit card needed &middot; Works with Instagram Business &amp; Creator accounts</p>
         </section>
 
         {/* Stats strip */}
@@ -110,8 +127,8 @@ export default function LandingPage() {
           {[
             { stat: '10K+', label: 'Creators onboarded' },
             { stat: '5M+', label: 'DMs automated' },
-            { stat: '₹2Cr+', label: 'Brand deals tracked' },
-            { stat: '4.9★', label: 'Average rating' },
+            { stat: '\u20b92Cr+', label: 'Brand deals tracked' },
+            { stat: '4.9\u2605', label: 'Average rating' },
           ].map((item) => (
             <div key={item.label} className="rounded-2xl border border-gray-100 bg-gray-50 p-5 text-center">
               <p className="text-2xl font-extrabold text-black">{item.stat}</p>
@@ -230,7 +247,7 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <button
-                  onClick={() => plan.name === 'AGENCY' ? window.location.href = 'mailto:support@afforal.com' : router.push('/signup')}
+                  onClick={() => handlePlanCTA(plan.route)}
                   className={`mt-6 w-full rounded-full py-2.5 text-sm font-semibold transition-colors ${
                     plan.highlighted ? 'bg-white text-black hover:bg-gray-100' : 'bg-black text-white hover:bg-gray-800'
                   }`}>
@@ -246,7 +263,7 @@ export default function LandingPage() {
         <section className="space-y-6">
           <h2 className="text-3xl font-extrabold text-black">Common questions.</h2>
           <div className="rounded-2xl border border-gray-100 bg-white px-4 divide-y divide-gray-100">
-            {faqs.map((item, index) => (
+            {faqs.map((item) => (
               <details key={item.q} className="group py-4">
                 <summary className="flex cursor-pointer items-center justify-between text-gray-900 font-medium hover:text-black list-none">
                   {item.q}
@@ -274,7 +291,7 @@ export default function LandingPage() {
       <footer className="mt-10 border-t border-gray-100 bg-black">
         <div className="mx-auto grid w-full max-w-7xl gap-8 px-4 py-10 text-sm text-gray-400 md:grid-cols-3 lg:px-8">
           <div>
-            <p className="text-lg font-extrabold text-white">iGrowth</p>
+            <p className="text-lg font-extrabold text-white">iGrowth <span className="text-xs font-normal text-gray-500">by Afforal</span></p>
             <p className="mt-2 text-gray-400 text-sm">The Instagram OS for creators.</p>
             <a href="mailto:support@afforal.com" className="mt-3 inline-block text-sm text-gray-400 hover:text-white transition-colors">
               support@afforal.com
@@ -294,7 +311,7 @@ export default function LandingPage() {
           </div>
         </div>
         <p className="border-t border-gray-800 px-4 py-4 text-center text-xs text-gray-600">
-          © 2026 iGrowth · Powered by Afforal. Not affiliated with Meta or Instagram.
+          &copy; 2026 iGrowth &middot; A product by <a href="https://afforal.com" target="_blank" rel="noopener noreferrer" className="hover:text-gray-400 transition-colors">Afforal</a>. Not affiliated with Meta or Instagram.
         </p>
       </footer>
     </div>
