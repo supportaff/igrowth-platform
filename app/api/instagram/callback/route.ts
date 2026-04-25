@@ -1,4 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+)
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -15,8 +21,8 @@ export async function GET(req: NextRequest) {
     )
   }
 
-  const appId      = process.env.INSTAGRAM_APP_ID!
-  const appSecret  = process.env.INSTAGRAM_APP_SECRET!
+  const appId       = process.env.INSTAGRAM_APP_ID!
+  const appSecret   = process.env.INSTAGRAM_APP_SECRET!
   const redirectUri = `${baseUrl}/api/instagram/callback`
 
   if (!appId || !appSecret) {
@@ -27,8 +33,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // ── Step 1: Short-lived token ────────────────────────────────────────────
-    const tokenRes  = await fetch('https://api.instagram.com/oauth/access_token', {
+    // ── Step 1: Short-lived token ─────────────────────────────────────────
+    const tokenRes = await fetch('https://api.instagram.com/oauth/access_token', {
       method:  'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
@@ -40,18 +46,13 @@ export async function GET(req: NextRequest) {
       }),
     })
 
-    // ⚠️ IMPORTANT: parse as TEXT first, then extract user_id as a string
-    // using regex to avoid JavaScript number precision loss on large int IDs.
-    // JSON.parse / res.json() coerces user_id to a JS number (float64),
-    // which corrupts IDs > 2^53 (e.g. 25997062846640488 becomes 25997062846640490)
-    const tokenRaw  = await tokenRes.text()
+    // Parse as text first to safely extract user_id without float64 precision loss
+    const tokenRaw    = await tokenRes.text()
     console.log('Token exchange raw response:', tokenRaw.slice(0, 300))
 
-    // Extract user_id as raw string before any JSON parsing
     const userIdMatch = tokenRaw.match(/"user_id"\s*:\s*(\d+)/)
     const rawUserId   = userIdMatch?.[1] ?? null
 
-    // Parse the rest normally (access_token is a string, safe to JSON.parse)
     let tokenData: { access_token?: string; error_type?: string; error?: string }
     try { tokenData = JSON.parse(tokenRaw) } catch {
       console.error('Token response parse error:', tokenRaw)
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
 
     const shortToken: string = tokenData.access_token!
 
-    // ── Step 2: Exchange for long-lived token (60 days) ──────────────────────
+    // ── Step 2: Long-lived token (60 days) ───────────────────────────────
     const longRes  = await fetch(
       `https://graph.instagram.com/access_token?grant_type=ig_exchange_token&client_secret=${appSecret}&access_token=${shortToken}`
     )
@@ -85,15 +86,12 @@ export async function GET(req: NextRequest) {
 
     const longToken: string = longData.access_token
 
-    // ── Step 3: Get authoritative user ID from /me (never trust tokenData.user_id) ─
-    // /me returns the ID as a JSON string field, not a number, so it's safe.
+    // ── Step 3: Resolve igUserId ─────────────────────────────────────────
     let igUserId: string
     if (rawUserId) {
-      // Prefer the regex-extracted raw string from the token response
       igUserId = rawUserId
       console.log(`User ID from token response (safe string): ${igUserId}`)
     } else {
-      // Fallback: fetch from /me endpoint — always returns id as a string
       const meRes  = await fetch(`https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${longToken}`)
       const meData = await meRes.json()
       if (meData.error || !meData.id) {
@@ -102,14 +100,52 @@ export async function GET(req: NextRequest) {
           new URL('/dashboard/settings?tab=instagram&error=me_failed', baseUrl)
         )
       }
-      igUserId = String(meData.id) // .id from Graph API is already a string
+      igUserId = String(meData.id)
       console.log(`User ID from /me endpoint: ${igUserId}`)
     }
 
-    // ── Step 4: Store ONLY the minimal identifiers in the cookie (<500 bytes) ─
+    // ── Step 4: Fetch username for display ──────────────────────────────
+    let username = ''
+    try {
+      const meRes  = await fetch(`https://graph.instagram.com/v21.0/me?fields=id,username&access_token=${longToken}`)
+      const meData = await meRes.json()
+      username = meData.username ?? ''
+    } catch { /* non-fatal */ }
+
+    // ── Step 5: Determine the platform user_id to store ─────────────────
+    // Use clerkUserId from state param if present, otherwise fall back to igUserId
+    // This is the key fix: automations are keyed by this same user_id
+    const platformUserId = userId && userId !== 'null' && userId !== '' ? userId : igUserId
+
+    // ── Step 6: Upsert into instagram_accounts table ─────────────────────
+    // This is what the webhook uses to look up the access token
+    const { error: upsertError } = await supabase
+      .from('instagram_accounts')
+      .upsert(
+        {
+          ig_user_id:   igUserId,
+          user_id:      platformUserId,
+          access_token: longToken,
+          username:     username,
+          connected_at: new Date().toISOString(),
+          updated_at:   new Date().toISOString(),
+        },
+        { onConflict: 'ig_user_id' }
+      )
+
+    if (upsertError) {
+      console.error('Failed to upsert instagram_accounts:', upsertError)
+      // Non-fatal: still set cookie and redirect — log but continue
+    } else {
+      console.log(`✅ instagram_accounts upserted: ig_user_id=${igUserId}, user_id=${platformUserId}`)
+    }
+
+    // ── Step 7: Set cookie ───────────────────────────────────────────────
     const cookiePayload = JSON.stringify({
       igUserId,
+      platformUserId,
       token:       longToken,
+      username,
       clerkUserId: userId ?? '',
       connectedAt: new Date().toISOString(),
     })
@@ -125,7 +161,7 @@ export async function GET(req: NextRequest) {
       path:     '/',
     })
 
-    console.log(`✅ ig_session cookie set for igUserId=${igUserId}`)
+    console.log(`✅ ig_session cookie set for igUserId=${igUserId}, platformUserId=${platformUserId}`)
     return response
   } catch (err) {
     console.error('Instagram OAuth error:', err)

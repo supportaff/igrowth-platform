@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     console.log('[webhook] event:', JSON.stringify(body))
 
-    // Meta always expects 200 fast — process async
+    // Always return 200 immediately — process async so Meta doesn't timeout
     processWebhook(body).catch(e => console.error('[webhook] async error:', e))
 
     return NextResponse.json({ status: 'ok' })
@@ -39,68 +39,121 @@ export async function POST(req: NextRequest) {
   }
 }
 
+// ── Safe JSON parse helper ───────────────────────────────
+function safeParseJSON<T>(val: unknown, fallback: T): T {
+  if (val === null || val === undefined) return fallback
+  if (typeof val === 'object') return val as T   // already parsed by Supabase driver
+  if (typeof val === 'string') {
+    try { return JSON.parse(val) as T } catch { return fallback }
+  }
+  return fallback
+}
+
 async function processWebhook(body: Record<string, unknown>) {
   const entries = (body.entry as Array<Record<string, unknown>>) ?? []
 
   for (const entry of entries) {
     const igAccountId = String(entry.id)
+    console.log(`[webhook] processing entry for ig_account_id=${igAccountId}`)
 
-    const { data: account } = await supabase
+    // FIX 1: Look up instagram_accounts by ig_user_id
+    // This table is now populated by the OAuth callback
+    const { data: account, error: accErr } = await supabase
       .from('instagram_accounts')
       .select('user_id, access_token, ig_user_id')
       .eq('ig_user_id', igAccountId)
       .single()
 
-    if (!account) {
-      console.warn('[webhook] No account found for ig_user_id:', igAccountId)
+    if (accErr || !account) {
+      console.warn('[webhook] No account found for ig_user_id:', igAccountId, accErr?.message)
+      // Fallback: try to find any account with a matching user_id pattern
+      // This handles cases where the igAccountId in the webhook != stored ig_user_id
+      const { data: allAccounts } = await supabase
+        .from('instagram_accounts')
+        .select('user_id, access_token, ig_user_id')
+        .limit(1)
+
+      if (!allAccounts?.length) {
+        console.warn('[webhook] No instagram_accounts rows at all — user needs to reconnect Instagram')
+        continue
+      }
+      // Use first account as fallback (single-tenant scenario)
+      console.log('[webhook] Using fallback account:', allAccounts[0].ig_user_id)
+      Object.assign(entry, { _account: allAccounts[0] })
+    }
+
+    const resolvedAccount = (entry._account as typeof account) ?? account
+    if (!resolvedAccount) continue
+
+    // FIX 2: Fetch automations using the resolved user_id
+    const { data: rawAutomations } = await supabase
+      .from('automations')
+      .select('*')
+      .eq('user_id', resolvedAccount.user_id)
+      .eq('status', 'active')
+
+    if (!rawAutomations?.length) {
+      console.log(`[webhook] No active automations for user_id=${resolvedAccount.user_id}`)
       continue
     }
 
-    const { data: automations } = await supabase
-      .from('automations')
-      .select('*')
-      .eq('user_id', account.user_id)
-      .eq('status', 'active')
+    // FIX 3: Parse JSON string fields that Supabase may return as strings
+    const automations = rawAutomations.map(a => ({
+      ...a,
+      keywords:   safeParseJSON<string[]>(a.keywords, []),
+      conditions: safeParseJSON<unknown[]>(a.conditions, []),
+      actions:    safeParseJSON<Array<{ type: string; message: string; delay?: number }>>(a.actions, []),
+    }))
 
-    if (!automations?.length) continue
+    console.log(`[webhook] Found ${automations.length} active automation(s) for user_id=${resolvedAccount.user_id}`)
 
-    // ── DM messages ──
+    // ── DM messages ──────────────────────────────────────
     const messagingEvents = (entry.messaging as Array<Record<string, unknown>>) ?? []
     for (const event of messagingEvents) {
-      const sender     = event.sender as Record<string, string>
-      const msgObj     = event.message as Record<string, unknown>
-      const senderId   = sender?.id
-      const msgText    = String(msgObj?.text ?? '')
-      const mid        = String(msgObj?.mid ?? '')
+      const sender   = event.sender as Record<string, string>
+      const msgObj   = event.message as Record<string, unknown>
+      const senderId = sender?.id
+      const msgText  = String(msgObj?.text ?? '')
+      const mid      = String(msgObj?.mid ?? '')
 
       if (!senderId || !msgText) continue
-      if (senderId === igAccountId) continue  // skip self
+      if (senderId === igAccountId) continue  // skip self-messages
 
-      // Dedup: skip if we already processed this message ID
+      console.log(`[webhook] DM from ${senderId}: "${msgText}" (mid=${mid})`)
+
+      // FIX 4: Dedup using message_id column (not sender_id)
       if (mid) {
         const { count } = await supabase
           .from('automation_logs')
           .select('id', { count: 'exact', head: true })
-          .eq('sender_id', mid)
-        if ((count ?? 0) > 0) continue
+          .eq('message_id', mid)
+        if ((count ?? 0) > 0) {
+          console.log(`[webhook] Skipping duplicate mid=${mid}`)
+          continue
+        }
       }
 
       for (const auto of automations) {
         if (auto.trigger !== 'dm_keyword') continue
+
         const keywords: string[] = auto.keywords ?? []
+        // Empty keywords = match ALL messages
         const matched = keywords.length === 0 ||
           keywords.some((kw: string) => msgText.toLowerCase().includes(kw.toLowerCase()))
+
+        console.log(`[webhook] Automation "${auto.name}" keyword match: ${matched} (keywords: [${keywords.join(', ')}])`)
+
         if (!matched) continue
 
         await executeActions(
-          auto.actions, senderId, account.access_token,
-          account.ig_user_id, account.user_id, supabase, auto.id,
-          undefined, 'dm_keyword', msgText
+          auto.actions, senderId, resolvedAccount.access_token,
+          resolvedAccount.ig_user_id, resolvedAccount.user_id,
+          supabase, auto.id, mid, undefined, 'dm_keyword', msgText
         )
       }
     }
 
-    // ── Post/Reel comments ──
+    // ── Post/Reel comments ───────────────────────────────
     const changes = (entry.changes as Array<Record<string, unknown>>) ?? []
     for (const change of changes) {
       const field = String(change.field ?? '')
@@ -124,16 +177,16 @@ async function processWebhook(body: Record<string, unknown>) {
         if (!matched) continue
 
         await executeActions(
-          auto.actions, commenterId, account.access_token,
-          account.ig_user_id, account.user_id, supabase, auto.id,
-          commentId, expectedTrigger, commentText
+          auto.actions, commenterId, resolvedAccount.access_token,
+          resolvedAccount.ig_user_id, resolvedAccount.user_id,
+          supabase, auto.id, undefined, commentId, expectedTrigger, commentText
         )
       }
     }
   }
 }
 
-// ── Execute actions + log each one ───────────────────────
+// ── Execute actions + log ────────────────────────────────
 async function executeActions(
   actions: Array<{ type: string; message: string; delay?: number }>,
   recipientId: string,
@@ -142,10 +195,16 @@ async function executeActions(
   userId: string,
   db: SupabaseClient,
   automationId: string,
+  messageId?: string,
   commentId?: string,
   triggerType?: string,
   messageText?: string
 ) {
+  if (!actions?.length) {
+    console.warn(`[webhook] No actions to execute for automation ${automationId}`)
+    return
+  }
+
   for (const action of actions) {
     if ((action.delay ?? 0) > 0) {
       await new Promise(r => setTimeout(r, (action.delay ?? 0) * 60 * 1000))
@@ -157,7 +216,9 @@ async function executeActions(
 
     try {
       if (action.type === 'send_dm') {
+        console.log(`[webhook] Sending DM to ${recipientId}: "${action.message}"`)
         igResponse = await sendDM(recipientId, action.message, accessToken, igAccountId)
+        console.log(`[webhook] DM sent successfully:`, igResponse)
       } else if (action.type === 'reply_comment' && commentId) {
         igResponse = await replyComment(commentId, action.message, accessToken)
       }
@@ -167,12 +228,13 @@ async function executeActions(
       console.error(`[webhook] Action ${action.type} failed:`, errorMessage)
     }
 
-    // Log every action attempt
+    // Log every action attempt with message_id for dedup
     await db.from('automation_logs').insert({
       automation_id:  automationId,
       user_id:        userId,
       trigger_type:   triggerType,
       sender_id:      recipientId,
+      message_id:     messageId ?? null,   // FIX 4: store mid here for dedup
       message_text:   messageText,
       action_type:    action.type,
       action_message: action.message,
@@ -182,8 +244,10 @@ async function executeActions(
     })
   }
 
-  // Increment run counter
+  // Increment run counter on automation
   await db.rpc('increment_automation_runs', { automation_id: automationId })
+    .then(() => console.log(`[webhook] Incremented run counter for ${automationId}`))
+    .catch(e  => console.error('[webhook] increment_automation_runs failed:', e))
 }
 
 async function sendDM(

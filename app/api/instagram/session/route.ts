@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Returns whether a valid ig_session cookie exists (never exposes token)
+// GET /api/instagram/session — returns session info including platformUserId
 export async function GET(req: NextRequest) {
   const raw = req.cookies.get('ig_session')?.value
   if (!raw) {
@@ -13,11 +13,15 @@ export async function GET(req: NextRequest) {
       console.log('ig_session: cookie present but missing token/userId')
       return NextResponse.json({ connected: false })
     }
-    // Never expose the token to the browser
+    // Return platformUserId so the automations page uses the correct user_id
+    // platformUserId = clerkUserId if available, else igUserId
     return NextResponse.json({
-      connected:   true,
-      igUserId:    session.igUserId,
-      connectedAt: session.connectedAt,
+      connected:      true,
+      igUserId:       session.igUserId,
+      // KEY FIX: expose platformUserId for automations user_id keying
+      user_id:        session.platformUserId ?? session.igUserId,
+      username:       session.username ?? '',
+      connectedAt:    session.connectedAt,
     })
   } catch {
     return NextResponse.json({ connected: false })
