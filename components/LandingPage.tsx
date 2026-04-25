@@ -26,7 +26,7 @@ export default function LandingPage() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeFaq, setActiveFaq] = useState<number | null>(null)
-  const [billingAnnual, setBillingAnnual] = useState(true)
+  const [billingAnnual, setBillingAnnual] = useState(false)
   const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
 
@@ -59,27 +59,84 @@ export default function LandingPage() {
     { num: '03', title: 'Go Live & Grow', desc: 'Activate your automation and watch leads, replies and engagement happen automatically 24/7.' },
   ]
 
+  // Annual pricing = ~20% off monthly
   const plans = [
     {
-      name: 'Starter', popular: false,
-      monthly: 0, annual: 0,
-      desc: 'Perfect for creators just getting started.',
-      features: ['1 Instagram account', '3 active automations', '500 DMs / month', 'Keyword triggers', 'Basic analytics'],
-      cta: 'Start Free',
+      name: 'Free',
+      popular: false,
+      badge: null,
+      monthly: 0,
+      annual: 0,
+      desc: 'Try it out — no credit card needed.',
+      highlight: null,
+      features: [
+        '500 DMs / month',
+        '500 contacts',
+        'Basic automations',
+        'CRM preview',
+        'Content insights (limited)',
+      ],
+      cta: 'Start for Free',
+      ctaHref: '/signup',
     },
     {
-      name: 'Pro', popular: true,
-      monthly: 29, annual: 19,
-      desc: 'For growing creators and small businesses.',
-      features: ['3 Instagram accounts', 'Unlimited automations', '10,000 DMs / month', 'All trigger types', 'Advanced analytics', 'Lead capture CRM', 'Priority support'],
-      cta: 'Start Pro Trial',
+      name: 'Creator',
+      popular: true,
+      badge: '35–40% cheaper than competitors',
+      monthly: 249,
+      annual: 199,
+      desc: 'Everything you need to turn followers into revenue.',
+      highlight: 'Most popular among solo creators',
+      features: [
+        'Unlimited automations',
+        'Unlimited DMs',
+        'Unlimited contacts',
+        'Follower CRM',
+        'Smart links',
+        'Content → conversion analytics',
+        'Email support',
+      ],
+      cta: 'Start Creator Plan',
+      ctaHref: '/signup?plan=creator',
     },
     {
-      name: 'Agency', popular: false,
-      monthly: 79, annual: 59,
-      desc: 'For agencies managing multiple clients.',
-      features: ['Unlimited accounts', 'Unlimited automations', 'Unlimited DMs', 'White-label reports', 'Team access', 'API access', 'Dedicated support'],
+      name: 'Growth',
+      popular: false,
+      badge: null,
+      monthly: 349,
+      annual: 279,
+      desc: 'For creators scaling to serious revenue.',
+      highlight: null,
+      features: [
+        'Everything in Creator',
+        'Advanced segmentation',
+        'Revenue & order tracking',
+        'Re-engagement campaigns',
+        'Higher rate limits',
+        'Priority support',
+      ],
+      cta: 'Start Growth Plan',
+      ctaHref: '/signup?plan=growth',
+    },
+    {
+      name: 'Agency',
+      popular: false,
+      badge: null,
+      monthly: 999,
+      annual: 799,
+      desc: 'Manage multiple clients from one dashboard.',
+      highlight: null,
+      features: [
+        'Multiple Instagram accounts',
+        'Team access',
+        'Client workspaces',
+        'Branded reports',
+        'Dedicated onboarding',
+        'Custom rate limits',
+        'SLA support',
+      ],
       cta: 'Contact Sales',
+      ctaHref: '#contact',
     },
   ]
 
@@ -87,7 +144,7 @@ export default function LandingPage() {
     { name: 'Sarah K.', handle: '@sarahkbeauty', avatar: 'SK', role: 'Beauty Creator · 180K followers', quote: 'iGrowth completely transformed how I handle DMs. I went from missing leads to capturing 200+ emails a week on autopilot.' },
     { name: 'Marcus T.', handle: '@marcusfitpro', avatar: 'MT', role: 'Fitness Coach · 95K followers', quote: 'The keyword automation is insane. I posted one reel, added a keyword trigger, and woke up to 400 new DM leads the next morning.' },
     { name: 'Priya R.', handle: '@priyastudio', avatar: 'PR', role: 'Design Agency · 12 clients', quote: 'Managing 12 client accounts from one dashboard saves us 30+ hours a week. The ROI on the Agency plan paid for itself in day one.' },
-    { name: 'Luca B.', handle: '@lucaecommerce', avatar: 'LB', role: 'E-commerce Brand · 220K followers', quote: 'Our story reply flow alone generates $8K/month in sales. I set it up once and it just runs. Absolutely worth every penny.' },
+    { name: 'Luca B.', handle: '@lucaecommerce', avatar: 'LB', role: 'E-commerce Brand · 220K followers', quote: 'Our story reply flow alone generates ₹60K/month in sales. I set it up once and it just runs. Absolutely worth every rupee.' },
   ]
 
   const faqs = [
@@ -96,8 +153,11 @@ export default function LandingPage() {
     { q: 'How quickly do automated DMs send?', a: 'Responses are sent within seconds of a trigger event. Your followers experience near-instant replies that feel personal.' },
     { q: 'Can I personalise automated messages?', a: 'Absolutely. Use variables like {{name}}, {{username}}, {{handle}} to personalise every message. Each DM feels handwritten.' },
     { q: 'What happens if I exceed my DM limit?', a: 'Automations pause gracefully and you\'ll receive an email notification. Upgrade at any time to restore full capacity instantly.' },
-    { q: 'Is there a free trial for paid plans?', a: 'Yes. The Pro plan comes with a 7-day free trial — no credit card required. Cancel anytime before the trial ends and you won\'t be charged.' },
+    { q: 'Is there a free trial for paid plans?', a: 'Yes. All paid plans come with a 7-day free trial — no credit card required. Cancel anytime before the trial ends and you won\'t be charged.' },
   ]
+
+  const formatPrice = (price: number) =>
+    price === 0 ? '₹0' : `₹${price.toLocaleString('en-IN')}`
 
   return (
     <div style={{ background: '#080810', color: '#fff', fontFamily: '\'Inter\', system-ui, sans-serif', overflowX: 'hidden' }}>
@@ -231,46 +291,83 @@ export default function LandingPage() {
 
       {/* ── PRICING ── */}
       <section id="pricing" style={{ padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,60px)' }}>
-        <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
           <div ref={pricing.ref} style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ ...fadeUp(pricing.inView, 0), display: 'inline-block', background: 'rgba(225,48,108,0.1)', border: `1px solid rgba(225,48,108,0.25)`, borderRadius: 99, padding: '5px 14px', marginBottom: 16 }}>
               <span style={{ color: PINK, fontSize: 12, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Pricing</span>
             </div>
-            <h2 style={{ ...fadeUp(pricing.inView, 0.1), fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 16 }}>Simple, transparent pricing</h2>
-            <p style={{ ...fadeUp(pricing.inView, 0.2), color: 'rgba(255,255,255,0.5)', fontSize: 16, marginBottom: 28 }}>No hidden fees. Cancel anytime.</p>
-            {/* Toggle */}
-            <div style={{ ...fadeUp(pricing.inView, 0.25), display: 'inline-flex', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 99, padding: 4, gap: 4 }}>
-              {['Monthly', 'Annual (save 35%)'].map((label, idx) => (
-                <button key={label} onClick={() => setBillingAnnual(idx === 1)} style={{ background: (billingAnnual === (idx === 1)) ? PINK : 'transparent', color: '#fff', border: 'none', borderRadius: 99, padding: '7px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>{label}</button>
+            <h2 style={{ ...fadeUp(pricing.inView, 0.1), fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 12 }}>
+              Cheaper. More powerful. Built for India.
+            </h2>
+            <p style={{ ...fadeUp(pricing.inView, 0.15), color: 'rgba(255,255,255,0.45)', fontSize: 16, marginBottom: 8 }}>
+              35–40% cheaper than alternatives. No hidden fees. Cancel anytime.
+            </p>
+            <p style={{ ...fadeUp(pricing.inView, 0.18), color: 'rgba(255,255,255,0.3)', fontSize: 13, marginBottom: 28 }}>
+              All prices in INR (₹) · GST extra if applicable
+            </p>
+            {/* Billing Toggle */}
+            <div style={{ ...fadeUp(pricing.inView, 0.22), display: 'inline-flex', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 99, padding: 4, gap: 4 }}>
+              {[['Monthly', false], ['Annual (save 20%)', true]].map(([label, isAnnual]) => (
+                <button key={String(label)} onClick={() => setBillingAnnual(isAnnual as boolean)} style={{ background: (billingAnnual === isAnnual) ? PINK : 'transparent', color: '#fff', border: 'none', borderRadius: 99, padding: '7px 20px', fontSize: 13, fontWeight: 600, cursor: 'pointer', transition: 'background 0.2s' }}>{label as string}</button>
               ))}
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px,100%), 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px,100%), 1fr))', gap: 20 }}>
             {plans.map((plan, i) => (
-              <div key={plan.name} style={{ ...fadeUp(pricing.inView, 0.1 + i * 0.1), position: 'relative', background: plan.popular ? `linear-gradient(135deg, rgba(225,48,108,0.12), rgba(225,48,108,0.04))` : 'rgba(255,255,255,0.03)', border: plan.popular ? `1px solid rgba(225,48,108,0.5)` : '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '32px 28px', display: 'flex', flexDirection: 'column' }}>
+              <div key={plan.name} style={{ ...fadeUp(pricing.inView, 0.1 + i * 0.08), position: 'relative', background: plan.popular ? `linear-gradient(135deg, rgba(225,48,108,0.14), rgba(225,48,108,0.04))` : 'rgba(255,255,255,0.03)', border: plan.popular ? `1px solid rgba(225,48,108,0.55)` : '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '32px 24px', display: 'flex', flexDirection: 'column' }}>
+
                 {plan.popular && (
-                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: PINK, color: '#fff', fontSize: 12, fontWeight: 700, padding: '4px 14px', borderRadius: 99, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>MOST POPULAR</div>
+                  <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: PINK, color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 99, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>MOST POPULAR</div>
                 )}
-                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 6 }}>{plan.name}</div>
-                <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 13, marginBottom: 20 }}>{plan.desc}</div>
-                <div style={{ marginBottom: 24 }}>
-                  <span style={{ fontSize: 48, fontWeight: 900, letterSpacing: '-2px' }}>${billingAnnual ? plan.annual : plan.monthly}</span>
-                  <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginLeft: 4 }}>/mo</span>
-                  {billingAnnual && plan.annual > 0 && <div style={{ color: PINK, fontSize: 12, fontWeight: 600, marginTop: 4 }}>Billed annually</div>}
+
+                <div style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{plan.name}</div>
+                <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 13, marginBottom: 20, lineHeight: 1.5 }}>{plan.desc}</div>
+
+                {/* Price */}
+                <div style={{ marginBottom: 6 }}>
+                  <span style={{ fontSize: 44, fontWeight: 900, letterSpacing: '-2px' }}>
+                    {plan.monthly === 0 ? '₹0' : formatPrice(billingAnnual ? plan.annual : plan.monthly)}
+                  </span>
+                  {plan.monthly > 0 && (
+                    <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, marginLeft: 4 }}>/mo</span>
+                  )}
                 </div>
+
+                {billingAnnual && plan.monthly > 0 && (
+                  <div style={{ color: PINK, fontSize: 12, fontWeight: 600, marginBottom: 4 }}>
+                    Billed annually · Save ₹{((plan.monthly - plan.annual) * 12).toLocaleString('en-IN')}/yr
+                  </div>
+                )}
+
+                {plan.badge && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(225,48,108,0.12)', border: '1px solid rgba(225,48,108,0.25)', borderRadius: 6, padding: '4px 10px', fontSize: 11, color: PINK, fontWeight: 600, marginBottom: 20, width: 'fit-content' }}>
+                    🏷️ {plan.badge}
+                  </div>
+                )}
+
+                {!plan.badge && <div style={{ marginBottom: 20 }} />}
+
                 <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 28px', flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {plan.features.map(feat => (
                     <li key={feat} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, fontSize: 14, color: 'rgba(255,255,255,0.75)' }}>
-                      <span style={{ color: PINK, fontWeight: 700, marginTop: 1 }}>✓</span>{feat}
+                      <span style={{ color: PINK, fontWeight: 700, marginTop: 1, flexShrink: 0 }}>✓</span>{feat}
                     </li>
                   ))}
                 </ul>
-                <Link href={plan.name === 'Agency' ? '#contact' : '/signup'} style={{ display: 'block', textAlign: 'center', background: plan.popular ? PINK : 'rgba(255,255,255,0.08)', color: '#fff', textDecoration: 'none', fontSize: 15, fontWeight: 700, padding: '13px', borderRadius: 10, border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)', transition: 'background 0.2s' }}
+
+                <Link href={plan.ctaHref} style={{ display: 'block', textAlign: 'center', background: plan.popular ? PINK : 'rgba(255,255,255,0.08)', color: '#fff', textDecoration: 'none', fontSize: 14, fontWeight: 700, padding: '13px', borderRadius: 10, border: plan.popular ? 'none' : '1px solid rgba(255,255,255,0.1)', transition: 'background 0.2s' }}
                   onMouseEnter={e => (e.currentTarget.style.background = plan.popular ? PINK_DARK : 'rgba(255,255,255,0.14)')}
                   onMouseLeave={e => (e.currentTarget.style.background = plan.popular ? PINK : 'rgba(255,255,255,0.08)')}>{plan.cta}</Link>
               </div>
             ))}
+          </div>
+
+          {/* Value footnote */}
+          <div style={{ textAlign: 'center', marginTop: 36 }}>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
+              💡 Creator plan is ~35–40% cheaper than LinkPlease &amp; similar tools · Free plan never expires · No credit card required
+            </p>
           </div>
         </div>
       </section>
@@ -400,7 +497,7 @@ export default function LandingPage() {
           </div>
           <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 24, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
             <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>© 2026 iGrowth. All rights reserved.</p>
-            <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>Made with ❤️ for creators</p>
+            <p style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13 }}>Made with ❤️ for Indian creators</p>
           </div>
         </div>
       </footer>
