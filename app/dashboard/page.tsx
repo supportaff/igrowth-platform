@@ -23,17 +23,10 @@ interface IGData {
 const PLAN = { dms: 0, dmsMax: 1000, contacts: 0, contactsMax: 1000, automations: 0, automationsMax: 5 }
 
 const quickActions = [
-  { icon: Zap,       label: 'Automations', desc: 'Build keyword flows',    href: '/dashboard/automations', color: 'var(--box-purple-bg)', border: 'var(--box-purple-border)', iconColor: 'var(--box-purple-text)' },
-  { icon: Briefcase, label: 'Brand Kit',   desc: 'Manage collabs & deals', href: '/dashboard/brands',       color: 'var(--box-blue-bg)',   border: 'var(--box-blue-border)',   iconColor: 'var(--box-blue-text)' },
-  { icon: BarChart3, label: 'Insights',    desc: 'Content performance',    href: '/dashboard/insights',     color: 'var(--box-green-bg)',  border: 'var(--box-green-border)',  iconColor: 'var(--box-green-text)' },
-  { icon: Users,     label: 'Contacts',    desc: 'Manage your audience',   href: '/dashboard/followers',    color: 'var(--box-amber-bg)',  border: 'var(--box-amber-border)',  iconColor: 'var(--box-amber-text)' },
-]
-
-const kpiColors = [
-  { bg: 'var(--box-purple-bg)', border: 'var(--box-purple-border)', icon: 'var(--box-purple-text)' },
-  { bg: 'var(--box-blue-bg)',   border: 'var(--box-blue-border)',   icon: 'var(--box-blue-text)' },
-  { bg: 'var(--box-green-bg)',  border: 'var(--box-green-border)',  icon: 'var(--box-green-text)' },
-  { bg: 'var(--box-amber-bg)',  border: 'var(--box-amber-border)',  icon: 'var(--box-amber-text)' },
+  { icon: Zap,       label: 'Automations', desc: 'Build keyword flows',    href: '/dashboard/automations' },
+  { icon: Briefcase, label: 'Brand Kit',   desc: 'Manage collabs & deals', href: '/dashboard/brands' },
+  { icon: BarChart3, label: 'Insights',    desc: 'Content performance',    href: '/dashboard/insights' },
+  { icon: Users,     label: 'Contacts',    desc: 'Manage your audience',   href: '/dashboard/followers' },
 ]
 
 export default function DashboardPage() {
@@ -89,9 +82,9 @@ export default function DashboardPage() {
   ]
 
   const usageBars = [
-    { label:'DMs sent',    used:PLAN.dms,        max:PLAN.dmsMax,        color:'#6d28d9' },
-    { label:'Contacts',    used:PLAN.contacts,   max:PLAN.contactsMax,   color:'#2563eb' },
-    { label:'Automations', used:PLAN.automations,max:PLAN.automationsMax,color:'#059669' },
+    { label:'DMs sent',    used:PLAN.dms,        max:PLAN.dmsMax },
+    { label:'Contacts',    used:PLAN.contacts,   max:PLAN.contactsMax },
+    { label:'Automations', used:PLAN.automations,max:PLAN.automationsMax },
   ]
 
   const firstName = user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? 'there'
@@ -99,29 +92,45 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
 
       {/* Greeting */}
       <div className="fade-up flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 style={{ fontSize:'22px', fontWeight:700, letterSpacing:'-0.4px', color:'#0a0a0a' }}>
-            {greeting},{' '}
-            <span style={{ color:'var(--text-secondary)' }}>{firstName}</span> 👋
+          <h1 style={{ fontSize: '20px', fontWeight: 700, letterSpacing: '-0.3px', color: '#fff' }}>
+            {greeting}, <span style={{ color: 'rgba(255,255,255,0.55)' }}>{firstName}</span> 👋
           </h1>
-          <p style={{ color:'var(--text-muted)', fontSize:'13px' }} className="mt-1">
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px', marginTop: 3 }}>
             Here&apos;s what&apos;s happening with your Instagram growth today.
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setUpgradeOpen(true)}
-            style={{ background:'#0a0a0a', color:'#fff', fontSize:'12px', border:'none', borderRadius:'8px' }}
-            className="flex items-center gap-1.5 px-3 py-2 font-semibold hover:bg-black/80 transition-all">
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <button
+            onClick={() => setUpgradeOpen(true)}
+            style={{
+              background: '#fff', color: '#000',
+              fontSize: '12px', fontWeight: 700,
+              border: 'none', borderRadius: 9, cursor: 'pointer',
+              padding: '8px 14px',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'opacity 140ms',
+            }}
+            className="hover:opacity-80">
             <Crown className="w-3.5 h-3.5" /> Upgrade
           </button>
-          <button onClick={() => loadIG(true)} disabled={refreshing}
-            style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:text-black hover:border-black/20 disabled:opacity-40 transition-all">
-            <RefreshCw className={`w-3.5 h-3.5 ${refreshing?'animate-spin':''}`} />
+          <button
+            onClick={() => loadIG(true)} disabled={refreshing}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: 'rgba(255,255,255,0.5)',
+              fontSize: '12px', borderRadius: 9, cursor: 'pointer',
+              padding: '8px 14px',
+              display: 'flex', alignItems: 'center', gap: 6,
+              transition: 'all 140ms',
+            }}
+            className="hover:border-white/30 hover:text-white/75 disabled:opacity-30">
+            <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
@@ -129,117 +138,177 @@ export default function DashboardPage() {
 
       {/* IG connection banner */}
       {igLoading ? (
-        <div style={{ background:'var(--surface-1)', border:'1px solid var(--border)' }}
-          className="fade-up rounded-xl p-4 flex items-center gap-3">
-          <Loader2 style={{ color:'var(--text-muted)' }} className="w-4 h-4 animate-spin" />
-          <span style={{ color:'var(--text-muted)', fontSize:'13px' }}>Loading Instagram data…</span>
+        <div
+          style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12 }}
+          className="fade-up p-4 flex items-center gap-3">
+          <Loader2 style={{ color: 'rgba(255,255,255,0.3)' }} className="w-4 h-4 animate-spin" />
+          <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '13px' }}>Loading Instagram data…</span>
         </div>
       ) : !ig.connected ? (
-        <div style={{ background:'#fffbeb', border:'1px solid #fde68a' }}
-          className="fade-up rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div style={{ background:'#fef3c7', borderRadius:'10px' }}
-              className="w-9 h-9 flex items-center justify-center flex-shrink-0">
-              <Instagram style={{ color:'#d97706' }} className="w-4 h-4" />
+        <div
+          style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}
+          className="fade-up p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{
+              background: 'rgba(255,255,255,0.06)', borderRadius: 10,
+              width: 36, height: 36, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <Instagram style={{ color: 'rgba(255,255,255,0.5)' }} className="w-4 h-4" />
             </div>
             <div>
-              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Connect your Instagram account</p>
-              <p style={{ color:'#92400e', fontSize:'12px' }}>Link your business account to unlock all features.</p>
+              <p style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>Connect your Instagram account</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: 2 }}>Link your business account to unlock all features.</p>
             </div>
           </div>
           <Link href="/dashboard/settings?tab=instagram"
-            style={{ background:'#d97706', color:'#fff', fontSize:'12px', borderRadius:'8px', border:'none' }}
-            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 font-semibold hover:bg-amber-600 transition-colors whitespace-nowrap">
+            style={{
+              background: '#fff', color: '#000',
+              fontSize: '12px', fontWeight: 700,
+              borderRadius: 9, padding: '8px 16px',
+              display: 'flex', alignItems: 'center', gap: 6,
+              flexShrink: 0, transition: 'opacity 140ms',
+            }}
+            className="hover:opacity-80">
             Connect now <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       ) : ig.error ? (
-        <div style={{ background:'#fef2f2', border:'1px solid #fecaca' }}
-          className="fade-up rounded-xl p-4 flex items-start justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <AlertTriangle style={{ color:'#dc2626' }} className="w-4 h-4 mt-0.5 flex-shrink-0" />
+        <div
+          style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}
+          className="fade-up p-4 flex items-start justify-between gap-4">
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
+            <AlertTriangle style={{ color: '#f87171' }} className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div>
-              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Instagram temporarily unavailable</p>
-              <p style={{ color:'#991b1b', fontSize:'12px' }}>{ig.is_transient?'Auto-retrying…':'Try again in a moment.'}</p>
+              <p style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>Instagram temporarily unavailable</p>
+              <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: 2 }}>
+                {ig.is_transient ? 'Auto-retrying…' : 'Try again in a moment.'}
+              </p>
             </div>
           </div>
-          <button onClick={()=>{setRetryCount(0);loadIG(true)}} disabled={refreshing}
-            style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-black disabled:opacity-40 transition-all">
-            <RefreshCw className={`w-3 h-3 ${refreshing?'animate-spin':''}`} /> Retry
+          <button
+            onClick={() => { setRetryCount(0); loadIG(true) }} disabled={refreshing}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.1)',
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: '12px', borderRadius: 8,
+              padding: '6px 12px', flexShrink: 0,
+              display: 'flex', alignItems: 'center', gap: 6,
+              cursor: 'pointer', transition: 'all 140ms',
+            }}
+            className="disabled:opacity-30 hover:border-white/20 hover:text-white/80">
+            <RefreshCw className={`w-3 h-3 ${refreshing ? 'animate-spin' : ''}`} /> Retry
           </button>
         </div>
       ) : (
-        <div style={{ background:'#f0fdf4', border:'1px solid #bbf7d0' }}
-          className="fade-up rounded-xl p-4">
-          <div className="flex items-center justify-between gap-4 flex-wrap">
-            <div className="flex items-center gap-3">
+        <div
+          style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12 }}
+          className="fade-up p-4">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
               {ig.profilePic ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img src={ig.profilePic} alt={ig.handle} loading="lazy" width={40} height={40}
-                  className="w-10 h-10 rounded-full" style={{ border:'2px solid #bbf7d0' }} />
+                <img src={ig.profilePic} alt={ig.handle} loading="lazy" width={38} height={38}
+                  style={{ width: 38, height: 38, borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)' }} />
               ) : (
-                <div style={{ background:'#dcfce7', border:'1px solid #bbf7d0' }}
-                  className="w-10 h-10 rounded-full flex items-center justify-center">
-                  <Instagram className="w-4 h-4" style={{ color:'#15803d' }} />
+                <div style={{
+                  background: 'rgba(255,255,255,0.06)', borderRadius: '50%',
+                  width: 38, height: 38, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <Instagram className="w-4 h-4" style={{ color: 'rgba(255,255,255,0.4)' }} />
                 </div>
               )}
               <div>
-                <div className="flex items-center gap-1.5">
-                  <p style={{ fontSize:'14px', color:'#0a0a0a' }} className="font-bold">@{ig.handle}</p>
-                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color:'#16a34a' }} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <p style={{ fontSize: '14px', color: '#fff', fontWeight: 700 }}>@{ig.handle}</p>
+                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color: '#4ade80' }} />
                 </div>
-                <p style={{ color:'#166534', fontSize:'12px' }}>{ig.bio||'Instagram Business Account'}</p>
+                <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', marginTop: 2 }}>
+                  {ig.bio || 'Instagram Business Account'}
+                </p>
               </div>
             </div>
-            <span style={{ background:'#dcfce7', color:'#15803d', border:'1px solid #bbf7d0', fontSize:'11px' }}
-              className="flex items-center gap-1 px-2.5 py-1 rounded-full font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 pulse-dot" /> Connected
+            <span style={{
+              background: 'rgba(74,222,128,0.1)',
+              color: '#4ade80',
+              border: '1px solid rgba(74,222,128,0.2)',
+              fontSize: '11px', fontWeight: 500,
+              padding: '4px 10px', borderRadius: 99,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot" /> Connected
             </span>
           </div>
         </div>
       )}
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}
+        className="lg:grid-cols-4">
         {kpis.map((k, i) => (
           <div key={k.label}
-            style={{ background: kpiColors[i].bg, border: `1px solid ${kpiColors[i].border}`, borderRadius:'12px', transition:'all 160ms ease' }}
-            className={`fade-up fade-up-${i+1} p-4 space-y-3 hover:-translate-y-px`}>
-            <div className="flex items-center justify-between">
-              <span style={{ color:'var(--text-muted)', fontSize:'12px' }}>{k.label}</span>
-              <div style={{ background:'rgba(0,0,0,0.06)', borderRadius:'8px' }}
-                className="w-7 h-7 flex items-center justify-center">
-                <k.icon style={{ color: kpiColors[i].icon }} className="w-3.5 h-3.5" />
+            style={{
+              background: '#0d0d0d',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: 12, padding: '16px',
+              transition: 'border-color 140ms',
+            }}
+            className={`fade-up fade-up-${i+1} hover:border-white/15`}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px' }}>{k.label}</span>
+              <div style={{
+                background: 'rgba(255,255,255,0.06)', borderRadius: 8,
+                width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                <k.icon style={{ color: 'rgba(255,255,255,0.4)' }} className="w-3.5 h-3.5" />
               </div>
             </div>
-            <div>
-              <p style={{ fontSize:'26px', fontWeight:700, fontVariantNumeric:'tabular-nums', letterSpacing:'-0.5px', color:'#0a0a0a' }}>
-                {igLoading ? <span className="skeleton" style={{ width:60, height:28, display:'inline-block' }} /> : k.value}
-              </p>
-              <p style={{ color:'var(--text-muted)', fontSize:'11px' }} className="mt-0.5">{k.sub}</p>
-            </div>
+            <p style={{
+              fontSize: '24px', fontWeight: 700,
+              fontVariantNumeric: 'tabular-nums',
+              letterSpacing: '-0.5px', color: '#fff', lineHeight: 1,
+            }}>
+              {igLoading
+                ? <span className="skeleton" style={{ width: 56, height: 26, display: 'inline-block' }} />
+                : k.value}
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '11px', marginTop: 5 }}>{k.sub}</p>
           </div>
         ))}
       </div>
 
       {/* Quick actions */}
       <div className="fade-up fade-up-2">
-        <p style={{ color:'var(--text-muted)', fontSize:'11px', letterSpacing:'0.08em' }}
-          className="uppercase font-semibold mb-3">Quick Actions</p>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <p style={{
+          color: 'rgba(255,255,255,0.3)', fontSize: '10px',
+          letterSpacing: '0.1em', textTransform: 'uppercase',
+          fontWeight: 600, marginBottom: 10,
+        }}>Quick Actions</p>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10 }}
+          className="lg:grid-cols-4">
           {quickActions.map(item => (
             <Link key={item.label} href={item.href}
-              style={{ background: item.color, border: `1px solid ${item.border}`, borderRadius:'12px' }}
-              className="group block p-4 hover:-translate-y-px transition-all">
-              <div style={{ background:'rgba(0,0,0,0.06)', borderRadius:'10px' }}
-                className="w-9 h-9 flex items-center justify-center mb-3 group-hover:bg-black/10 transition-colors">
-                <item.icon style={{ color: item.iconColor }} className="w-4 h-4" />
+              style={{
+                background: '#0d0d0d',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: 12, padding: '16px',
+                display: 'block',
+                transition: 'border-color 140ms, background 140ms',
+              }}
+              className="group hover:bg-white/[0.03] hover:border-white/15">
+              <div style={{
+                background: 'rgba(255,255,255,0.06)', borderRadius: 9,
+                width: 34, height: 34, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                marginBottom: 12, transition: 'background 140ms',
+              }}
+              className="group-hover:bg-white/10">
+                <item.icon style={{ color: 'rgba(255,255,255,0.6)' }} className="w-4 h-4" />
               </div>
-              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">{item.label}</p>
-              <p style={{ color:'var(--text-muted)', fontSize:'12px' }} className="mt-0.5">{item.desc}</p>
-              <div className="flex items-center justify-end mt-3">
-                <ArrowRight style={{ color: item.iconColor }} className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-all" />
+              <p style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>{item.label}</p>
+              <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', marginTop: 3 }}>{item.desc}</p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 12 }}>
+                <ArrowRight style={{ color: 'rgba(255,255,255,0.3)' }}
+                  className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:text-white/60 transition-all" />
               </div>
             </Link>
           ))}
@@ -247,100 +316,124 @@ export default function DashboardPage() {
       </div>
 
       {/* Usage bars */}
-      <div style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px' }}
-        className="fade-up fade-up-3 p-4">
-        <div className="flex items-center justify-between mb-4">
+      <div
+        style={{ background: '#0d0d0d', border: '1px solid rgba(255,255,255,0.07)', borderRadius: 12 }}
+        className="fade-up fade-up-3 p-5">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <div>
-            <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Plan Usage</p>
-            <p style={{ color:'var(--text-muted)', fontSize:'12px' }}>Free plan · resets monthly</p>
+            <p style={{ fontSize: '13px', color: '#fff', fontWeight: 600 }}>Plan Usage</p>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', marginTop: 2 }}>Free plan · resets monthly</p>
           </div>
-          <button onClick={()=>setUpgradeOpen(true)}
-            style={{ background:'#0a0a0a', color:'#fff', fontSize:'11px', borderRadius:'8px' }}
-            className="flex items-center gap-1.5 px-3 py-1.5 font-semibold hover:bg-black/80 transition-all">
+          <button
+            onClick={() => setUpgradeOpen(true)}
+            style={{
+              background: '#fff', color: '#000',
+              fontSize: '11px', fontWeight: 700,
+              borderRadius: 8, border: 'none', cursor: 'pointer',
+              padding: '6px 12px',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'opacity 140ms',
+            }}
+            className="hover:opacity-80">
             <Crown className="w-3 h-3" /> Upgrade
           </button>
         </div>
         <div className="space-y-3">
           {usageBars.map(b => {
-            const pct = Math.min(100, Math.round((b.used/b.max)*100))
+            const pct = Math.min(100, Math.round((b.used / b.max) * 100))
             const warn = pct >= 80
             return (
               <div key={b.label}>
-                <div className="flex items-center justify-between mb-1.5">
-                  <span style={{ color:'var(--text-secondary)', fontSize:'12px' }}>{b.label}</span>
-                  <span style={{ color: warn ? 'var(--amber)' : 'var(--text-muted)', fontSize:'12px', fontVariantNumeric:'tabular-nums' }}>
-                    {b.used} <span style={{ color:'var(--text-muted)' }}>/ {b.max}</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.55)', fontSize: '12px' }}>{b.label}</span>
+                  <span style={{ color: warn ? '#fbbf24' : 'rgba(255,255,255,0.3)', fontSize: '12px', fontVariantNumeric: 'tabular-nums' }}>
+                    {b.used} <span style={{ color: 'rgba(255,255,255,0.2)' }}>/ {b.max}</span>
                   </span>
                 </div>
-                <div style={{ background:'var(--surface-3)', borderRadius:'99px', height:'5px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.05)', borderRadius: 99, height: 4 }}>
                   <div style={{
-                    width: `${Math.max(pct,2)}%`, height:'5px', borderRadius:'99px',
-                    background: warn ? 'var(--amber)' : b.color,
-                    transition:'width 600ms ease'
+                    width: `${Math.max(pct, 1.5)}%`, height: 4, borderRadius: 99,
+                    background: warn ? '#fbbf24' : 'rgba(255,255,255,0.45)',
+                    transition: 'width 600ms ease',
                   }} />
                 </div>
               </div>
             )
           })}
         </div>
-        <button onClick={()=>setUpgradeOpen(true)}
-          style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'10px' }}
-          className="w-full mt-4 p-3 text-left hover:border-black/20 hover:bg-black/5 transition-all">
-          <div className="flex items-center justify-between">
-            <div>
-              <p style={{ fontSize:'12px', color:'#0a0a0a' }} className="font-semibold">Upgrade to Pro</p>
-              <p style={{ color:'var(--text-muted)', fontSize:'11px' }}>Unlimited DMs, contacts & automations</p>
-            </div>
-            <div className="text-right">
-              <p style={{ fontSize:'14px', fontWeight:700, color:'#0a0a0a' }}>₹299<span style={{ color:'var(--text-muted)', fontSize:'10px', fontWeight:400 }}>/mo</span></p>
-              <p style={{ color:'var(--text-muted)', fontSize:'10px' }}>billed annually</p>
-            </div>
+        <button
+          onClick={() => setUpgradeOpen(true)}
+          style={{
+            background: 'rgba(255,255,255,0.04)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10, width: '100%', marginTop: 14,
+            padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            transition: 'border-color 140ms, background 140ms',
+          }}
+          className="hover:border-white/20 hover:bg-white/[0.06]">
+          <div>
+            <p style={{ fontSize: '12px', color: '#fff', fontWeight: 600 }}>Upgrade to Pro</p>
+            <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', marginTop: 2 }}>Unlimited DMs, contacts & automations</p>
+          </div>
+          <div style={{ textAlign: 'right' }}>
+            <p style={{ fontSize: '15px', fontWeight: 700, color: '#fff', fontVariantNumeric: 'tabular-nums' }}>
+              ₹399<span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '10px', fontWeight: 400 }}>/mo</span>
+            </p>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', marginTop: 2 }}>billed annually</p>
           </div>
         </button>
       </div>
 
       {/* Recent posts */}
-      {ig.connected && !ig.error && ig.posts && ig.posts.length>0 && (
+      {ig.connected && !ig.error && ig.posts && ig.posts.length > 0 && (
         <div className="fade-up fade-up-4">
-          <div className="flex items-center justify-between mb-3">
-            <p style={{ color:'var(--text-muted)', fontSize:'11px', letterSpacing:'0.08em' }}
-              className="uppercase font-semibold">Recent Posts</p>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '10px', letterSpacing: '0.1em', textTransform: 'uppercase', fontWeight: 600 }}>
+              Recent Posts
+            </p>
             <Link href="/dashboard/insights"
-              style={{ color:'var(--text-muted)', fontSize:'12px' }}
-              className="flex items-center gap-1 hover:text-black transition-colors">
+              style={{ color: 'rgba(255,255,255,0.4)', fontSize: '12px', display: 'flex', alignItems: 'center', gap: 4 }}
+              className="hover:text-white/70 transition-colors">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-            {ig.posts.slice(0,8).map(post => (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 8 }}
+            className="sm:grid-cols-4">
+            {ig.posts.slice(0, 8).map(post => (
               <a key={post.id} href={post.permalink} target="_blank" rel="noopener noreferrer"
-                style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden' }}
-                className="group block hover:border-black/20 transition-all">
-                <div className="aspect-square relative" style={{ background:'var(--surface-2)' }}>
-                  {(post.media_url||post.thumbnail_url) ? (
+                style={{
+                  background: '#0d0d0d',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: 10, overflow: 'hidden', display: 'block',
+                  transition: 'border-color 140ms',
+                }}
+                className="group hover:border-white/15">
+                <div className="aspect-square relative" style={{ background: '#141414' }}>
+                  {(post.media_url || post.thumbnail_url) ? (
                     // eslint-disable-next-line @next/next/no-img-element
-                    <img src={post.thumbnail_url||post.media_url} alt="" loading="lazy"
+                    <img src={post.thumbnail_url || post.media_url} alt="" loading="lazy"
                       width={300} height={300}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center">
-                      {post.media_type==='VIDEO'
-                        ? <Video style={{ color:'var(--text-muted)' }} className="w-6 h-6" />
-                        : <Image style={{ color:'var(--text-muted)' }} className="w-6 h-6" />}
+                      {post.media_type === 'VIDEO'
+                        ? <Video style={{ color: 'rgba(255,255,255,0.2)' }} className="w-5 h-5" />
+                        : <Image style={{ color: 'rgba(255,255,255,0.2)' }} className="w-5 h-5" />}
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <ExternalLink className="w-4 h-4 text-white" />
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <ExternalLink className="w-4 h-4 text-white/80" />
                   </div>
                 </div>
-                <div className="px-2.5 py-2 flex items-center justify-between">
-                  <span style={{ color:'var(--text-muted)', fontSize:'11px' }} className="flex items-center gap-1">
+                <div style={{ padding: '8px 10px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <Heart className="w-3 h-3" />{fmt(post.like_count)}
                   </span>
-                  <span style={{ color:'var(--text-muted)', fontSize:'11px' }} className="flex items-center gap-1">
+                  <span style={{ color: 'rgba(255,255,255,0.35)', fontSize: '11px', display: 'flex', alignItems: 'center', gap: 4 }}>
                     <MessageSquare className="w-3 h-3" />{fmt(post.comments_count)}
                   </span>
-                  <span style={{ color:'var(--text-muted)', fontSize:'11px' }}>{timeAgo(post.timestamp)}</span>
+                  <span style={{ color: 'rgba(255,255,255,0.25)', fontSize: '11px' }}>{timeAgo(post.timestamp)}</span>
                 </div>
               </a>
             ))}
@@ -348,7 +441,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <UpgradeModal open={upgradeOpen} onClose={()=>setUpgradeOpen(false)} />
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   )
 }

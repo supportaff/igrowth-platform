@@ -1,112 +1,162 @@
 'use client'
-import { X, Check, Zap } from 'lucide-react'
+import { useEffect } from 'react'
+import Link from 'next/link'
+import { X, Check, Zap, Crown } from 'lucide-react'
 
-const plans = [
-  {
-    name: 'Creator',
-    price: '₹499',
-    period: '/month',
-    features: ['Unlimited DMs', 'Unlimited automations', 'Full CRM', '25 brand deals', '90-day insights'],
-    highlight: false,
-  },
-  {
-    name: 'Growth',
-    price: '₹999',
-    period: '/month',
-    features: ['Everything in Creator', 'Unlimited brand deals', 'Re-engagement flows', '180-day insights', 'Deal PDF export', 'Priority support'],
-    highlight: true,
-    badge: 'Best Value',
-  },
-  {
-    name: 'Agency',
-    price: '₹2499',
-    period: '/month',
-    features: ['10 Instagram accounts', '5 team seats', 'Client workspaces', 'Branded exports', 'Dedicated onboarding'],
-    highlight: false,
-  },
+const PRO_FEATURES = [
+  'Unlimited DMs every month',
+  'Unlimited Contacts',
+  'Unlimited Automations',
+  'Re-trigger automations',
+  'Ask For Follow flows',
+  'Lead Gen automations',
+  'Priority support',
 ]
 
 export default function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
-  if (!open) return null
-  return (
-    <div style={{
-      position: 'fixed', inset: 0, zIndex: 100,
-      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
-    }}
-      onClick={onClose}>
-      <div style={{
-        background: '#2c3340', border: '1px solid rgba(238,238,238,0.1)',
-        borderRadius: 24, padding: '32px 28px', maxWidth: 780, width: '100%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-      }}
-        onClick={e => e.stopPropagation()}>
+  useEffect(() => {
+    if (open) document.body.style.overflow = 'hidden'
+    else document.body.style.overflow = ''
+    return () => { document.body.style.overflow = '' }
+  }, [open])
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#EEEEEE', marginBottom: 4 }}>Upgrade your plan</h2>
-            <p style={{ fontSize: 13, color: 'rgba(238,238,238,0.45)' }}>Unlock more power for your creator workflow</p>
+  if (!open) return null
+
+  return (
+    <div
+      style={{
+        position: 'fixed', inset: 0, zIndex: 100,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: '20px',
+        background: 'rgba(0,0,0,0.85)',
+        backdropFilter: 'blur(8px)',
+      }}
+      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+
+      <div style={{
+        background: '#0d0d0d',
+        border: '1px solid rgba(255,255,255,0.1)',
+        borderRadius: 20,
+        width: '100%', maxWidth: 460,
+        overflow: 'hidden',
+        boxShadow: '0 32px 80px rgba(0,0,0,0.9)',
+      }}>
+
+        {/* Header */}
+        <div style={{
+          padding: '22px 24px 0',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{
+              background: '#fff', borderRadius: 10,
+              width: 36, height: 36,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <Crown style={{ width: 16, height: 16, color: '#000' }} />
+            </div>
+            <div>
+              <h3 style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>Upgrade to Pro</h3>
+              <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)', marginTop: 2 }}>Unlock unlimited growth</p>
+            </div>
           </div>
-          <button onClick={onClose}
-            style={{ color: 'rgba(238,238,238,0.4)', background: 'transparent', border: 'none',
-              cursor: 'pointer', padding: 4, borderRadius: 8 }}
-            className="hover:text-[#EEEEEE] hover:bg-white/5 transition-colors"
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.06)',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 8, padding: 6,
+              color: 'rgba(255,255,255,0.5)',
+              cursor: 'pointer', transition: 'all 140ms',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+            className="hover:border-white/20 hover:text-white/75"
             aria-label="Close">
-            <X style={{ width: 18, height: 18 }} />
+            <X style={{ width: 15, height: 15 }} />
           </button>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
-          {plans.map(plan => (
-            <div key={plan.name} style={{
-              position: 'relative',
-              background: plan.highlight ? '#00ADB5' : '#393E46',
-              border: `1px solid ${plan.highlight ? '#00ADB5' : 'rgba(238,238,238,0.1)'}`,
-              borderRadius: 16, padding: '22px 18px',
-              boxShadow: plan.highlight ? '0 0 30px rgba(0,173,181,0.3)' : 'none',
-            }}>
-              {plan.badge && (
-                <span style={{
-                  position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
-                  background: '#EEEEEE', color: '#222831', fontSize: 10, fontWeight: 800,
-                  padding: '3px 10px', borderRadius: 99, whiteSpace: 'nowrap',
-                }}>{plan.badge}</span>
-              )}
-              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em',
-                color: plan.highlight ? 'rgba(255,255,255,0.7)' : 'rgba(238,238,238,0.4)',
-                marginBottom: 6, textTransform: 'uppercase' }}>{plan.name}</p>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, marginBottom: 14 }}>
-                <span style={{ fontSize: 26, fontWeight: 800, color: plan.highlight ? '#fff' : '#EEEEEE' }}>{plan.price}</span>
-                <span style={{ fontSize: 12, marginBottom: 3, color: plan.highlight ? 'rgba(255,255,255,0.6)' : 'rgba(238,238,238,0.4)' }}>{plan.period}</span>
+        {/* Price */}
+        <div style={{ padding: '18px 24px 0' }}>
+          <div style={{
+            background: '#fff',
+            borderRadius: 14, padding: '18px 20px',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: 3 }}>
+                <span style={{ fontSize: 36, fontWeight: 800, color: '#000', letterSpacing: '-1px' }}>₹399</span>
+                <span style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)' }}>/mo</span>
               </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 18px', display: 'flex', flexDirection: 'column', gap: 7 }}>
-                {plan.features.map(f => (
-                  <li key={f} style={{ display: 'flex', gap: 7, fontSize: 12,
-                    color: plan.highlight ? 'rgba(255,255,255,0.85)' : 'rgba(238,238,238,0.6)',
-                    alignItems: 'flex-start' }}>
-                    <Check style={{ width: 13, height: 13, flexShrink: 0, marginTop: 1,
-                      color: plan.highlight ? '#fff' : '#00ADB5' }} />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <button style={{
-                width: '100%', padding: '9px', borderRadius: 10, fontWeight: 700, fontSize: 13,
-                background: plan.highlight ? '#222831' : '#00ADB5',
-                color: plan.highlight ? '#00ADB5' : '#fff',
-                border: 'none', cursor: 'pointer', transition: 'opacity 160ms',
-              }}
-                className="hover:opacity-85">
-                <Zap style={{ width: 12, height: 12, display: 'inline', marginRight: 5 }} fill="currentColor" />
-                Choose {plan.name}
-              </button>
+              <p style={{ fontSize: 12, color: 'rgba(0,0,0,0.45)', marginTop: 2 }}>billed annually</p>
             </div>
-          ))}
+            <div style={{
+              background: '#000',
+              color: '#fff',
+              fontSize: 10, fontWeight: 700, letterSpacing: '0.07em',
+              padding: '5px 12px', borderRadius: 99,
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              <Zap style={{ width: 9, height: 9 }} fill="white" /> PRO
+            </div>
+          </div>
         </div>
 
-        <p style={{ textAlign: 'center', color: 'rgba(238,238,238,0.25)', fontSize: 12, marginTop: 20 }}>
-          7-day free trial · No credit card required · Cancel anytime
-        </p>
+        {/* Features */}
+        <div style={{ padding: '16px 24px' }}>
+          <p style={{
+            fontSize: 10, fontWeight: 600, letterSpacing: '0.09em',
+            textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)',
+            marginBottom: 12,
+          }}>Everything in Pro</p>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {PRO_FEATURES.map(f => (
+              <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <div style={{
+                  background: 'rgba(255,255,255,0.08)', borderRadius: 99,
+                  width: 18, height: 18,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                }}>
+                  <Check style={{ width: 10, height: 10, color: '#fff' }} />
+                </div>
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{f}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* CTA */}
+        <div style={{ padding: '0 24px 22px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <Link
+            href="https://dash.linkplease.co/signup"
+            target="_blank" rel="noopener noreferrer"
+            style={{
+              display: 'block', textAlign: 'center',
+              background: '#fff', color: '#000',
+              borderRadius: 12, padding: '13px 0',
+              fontSize: 14, fontWeight: 700,
+              border: 'none',
+              transition: 'opacity 140ms',
+            }}
+            className="hover:opacity-85">
+            Get Pro — ₹399/mo
+          </Link>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 12, padding: '11px 0',
+              fontSize: 13, fontWeight: 500,
+              color: 'rgba(255,255,255,0.4)',
+              cursor: 'pointer', width: '100%',
+              transition: 'all 140ms',
+            }}
+            className="hover:border-white/20 hover:text-white/60">
+            Continue with Free
+          </button>
+        </div>
+
       </div>
     </div>
   )
