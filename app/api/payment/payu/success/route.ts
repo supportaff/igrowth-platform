@@ -6,7 +6,6 @@ import { cookies } from 'next/headers'
 const MERCHANT_SALT = process.env.PAYU_SALT!
 const BASE_URL      = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
 
-// PayU reverse hash: sha512(salt|status|udf5|udf4|udf3|udf2|udf1|email|firstname|productinfo|amount|txnid|key)
 function verifyHash(params: Record<string, string>): boolean {
   const str = [
     MERCHANT_SALT,
@@ -27,7 +26,7 @@ function makeSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
-        get:    (name) => cookieStore.get(name)?.value,
+        get:    (name: string) => cookieStore.get(name)?.value,
         set:    () => {},
         remove: () => {},
       },

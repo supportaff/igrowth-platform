@@ -3,16 +3,11 @@ import crypto from 'crypto'
 import { createServerClient } from '@supabase/ssr'
 import { cookies } from 'next/headers'
 
-// ───────────────────────────────────────────────────────────────────────────
-// PayU config
-// Set PAYU_ENV=live in Vercel to go live — key/salt variable names stay same.
-// Just replace VALUES of PAYU_KEY and PAYU_SALT with your live credentials.
-// ───────────────────────────────────────────────────────────────────────────
 const IS_LIVE = process.env.PAYU_ENV === 'live'
 
 const PAYU_URL = IS_LIVE
-  ? 'https://secure.payu.in/_payment'  // live
-  : 'https://test.payu.in/_payment'    // test
+  ? 'https://secure.payu.in/_payment'
+  : 'https://test.payu.in/_payment'
 
 const MERCHANT_KEY  = process.env.PAYU_KEY!
 const MERCHANT_SALT = process.env.PAYU_SALT!
@@ -39,7 +34,7 @@ function makeSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
-        get:    (name) => cookieStore.get(name)?.value,
+        get:    (name: string) => cookieStore.get(name)?.value,
         set:    () => {},
         remove: () => {},
       },

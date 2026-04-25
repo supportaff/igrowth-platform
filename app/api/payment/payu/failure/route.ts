@@ -11,7 +11,7 @@ function makeSupabase() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     {
       cookies: {
-        get:    (name) => cookieStore.get(name)?.value,
+        get:    (name: string) => cookieStore.get(name)?.value,
         set:    () => {},
         remove: () => {},
       },
