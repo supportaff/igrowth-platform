@@ -29,6 +29,19 @@ export default function SettingsPage() {
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab) setActiveTab(tab)
+    // Check if returning from Instagram OAuth
+    const connected = searchParams.get('connected')
+    const handle    = searchParams.get('handle')
+    const followers = searchParams.get('followers')
+    if (connected === 'true' && handle) {
+      setIg({ connected: true, handle, followers: Number(followers) || 0, lastSync: 'Just now' })
+      setActiveTab('instagram')
+    }
+    // Handle errors
+    const error = searchParams.get('error')
+    if (error) {
+      console.warn('Instagram OAuth error:', error)
+    }
   }, [searchParams])
 
   function handleSave() {
@@ -43,11 +56,17 @@ export default function SettingsPage() {
 
   function handleIGConnect() {
     setIgLoading(true)
-    // Redirect to Instagram OAuth (real URL will come from backend env)
-    const appId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID ?? 'YOUR_APP_ID'
+    const appId = process.env.NEXT_PUBLIC_INSTAGRAM_APP_ID
+    if (!appId || appId === 'YOUR_APP_ID') {
+      alert('Instagram App ID is not configured. Please contact support.')
+      setIgLoading(false)
+      return
+    }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
-    const scope = 'instagram_basic,instagram_manage_messages,pages_show_list,pages_messaging'
-    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code`
+    // ✅ Correct Meta Graph API scopes (v21+)
+    const scope = 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,pages_show_list,pages_read_engagement'
+    const state = encodeURIComponent(user?.id ?? 'unknown')
+    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&state=${state}`
   }
 
   function handleIGDisconnect() {
@@ -94,7 +113,6 @@ export default function SettingsPage() {
               <p className="text-xs text-violet-400 mt-1">Managed by Google / Clerk</p>
             </div>
           </div>
-
           <div>
             <label className="block text-xs font-medium text-white/50 mb-1.5">Brand / Business name</label>
             <input value={brand} onChange={e => { setBrand(e.target.value); setSaved(false) }}
@@ -134,7 +152,7 @@ export default function SettingsPage() {
                 {[
                   'Instagram Business or Creator account',
                   'Connected to a Facebook Page',
-                  'Messaging permissions enabled',
+                  'Messaging permissions enabled on your Page',
                 ].map((req, i) => (
                   <div key={i} className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-full bg-white/8 border border-white/12 flex items-center justify-center flex-shrink-0">
@@ -151,14 +169,14 @@ export default function SettingsPage() {
                 {igLoading ? 'Redirecting to Instagram...' : 'Connect Instagram Business Account'}
                 {!igLoading && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
               </button>
-              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook/Instagram to authorize iGrowth.</p>
+              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API v21.</p>
             </>
           ) : (
             <>
               <div className="p-5 bg-green-500/8 border border-green-500/20 rounded-xl flex items-start gap-3">
                 <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-semibold text-green-300">Connected</p>
+                  <p className="text-sm font-semibold text-green-300">Connected ✓</p>
                   <p className="text-xs text-white/40 mt-0.5">@{ig.handle} · {ig.followers.toLocaleString()} followers · Last sync: {ig.lastSync}</p>
                 </div>
               </div>
