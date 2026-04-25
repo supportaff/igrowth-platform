@@ -131,7 +131,11 @@ async function executeActions(
   }
 
   // Increment run count
-  await db.rpc('increment_automation_runs', { automation_id: automationId }).catch(() => null)
+  try {
+    await db.rpc('increment_automation_runs', { automation_id: automationId })
+  } catch {
+    // non-critical, ignore
+  }
 }
 
 async function sendDM(recipientId: string, message: string, accessToken: string, igAccountId: string) {
