@@ -1,113 +1,107 @@
-'use client'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+
+const C = {
+  bg: '#000000', bg2: '#0a0a0a', card: '#111111',
+  border: 'rgba(255,255,255,0.08)', text: '#ffffff',
+  textMd: 'rgba(255,255,255,0.62)', textSm: 'rgba(255,255,255,0.38)',
+}
+
+export const metadata = { title: 'Terms of Service – iGrowth', description: 'iGrowth Terms of Service' }
 
 export default function TermsPage() {
-  const router = useRouter()
-  const lastUpdated = 'April 25, 2026'
+  const sections = [
+    {
+      title: '1. Acceptance of Terms',
+      body: `By creating an account or accessing iGrowth ("Service"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, do not use the Service. These Terms apply to all users, including free and paid subscribers.`,
+    },
+    {
+      title: '2. Description of Service',
+      body: `iGrowth provides an Instagram automation platform that enables users to automate direct messages, capture leads, manage brand deals, and schedule content using Meta's official Instagram Graph API. The Service requires a connected Instagram Business or Creator account.`,
+    },
+    {
+      title: '3. Eligibility',
+      body: `You must be at least 18 years old and have the legal capacity to enter into a binding agreement to use iGrowth. By using the Service, you represent and warrant that you meet these requirements. The Service is intended for use in India and other jurisdictions where Instagram Business API access is permitted.`,
+    },
+    {
+      title: '4. Account Registration',
+      body: `You are responsible for maintaining the confidentiality of your account credentials. You agree to provide accurate, current, and complete information during registration. You are solely responsible for all activities that occur under your account. Notify us immediately at hello@igrowth.app if you suspect any unauthorised access.`,
+    },
+    {
+      title: '5. Subscription & Billing',
+      body: `iGrowth offers a Free plan and a Pro plan (₹399/account/month, billed annually) and Enterprise plans with custom pricing. All prices are in Indian Rupees (INR) and exclusive of applicable GST. Paid plans renew automatically unless cancelled before the renewal date. Refunds are not provided for partial billing periods. You may downgrade or cancel at any time from your account settings.`,
+    },
+    {
+      title: '6. Acceptable Use',
+      body: `You agree not to use iGrowth to send spam, harass users, violate Meta's Platform Policies, or engage in any activity that is unlawful, fraudulent, or harmful. Automated messages must comply with applicable Indian law including the Information Technology Act, 2000 and any applicable Telecom Regulatory Authority of India (TRAI) regulations. iGrowth reserves the right to suspend accounts that violate these requirements without notice.`,
+    },
+    {
+      title: '7. API Compliance',
+      body: `iGrowth operates exclusively via Meta's official Instagram Graph API. Users must maintain compliance with Meta's Terms of Service and Community Standards at all times. iGrowth is not responsible for account restrictions imposed by Meta as a result of your content or usage patterns.`,
+    },
+    {
+      title: '8. Intellectual Property',
+      body: `All rights, title, and interest in and to the iGrowth platform, including its design, software, trademarks, and content, are owned by or licensed to iGrowth. You retain ownership of your own content and data. You grant iGrowth a limited, non-exclusive licence to use your data solely to operate and improve the Service.`,
+    },
+    {
+      title: '9. Limitation of Liability',
+      body: `To the maximum extent permitted by law, iGrowth shall not be liable for any indirect, incidental, special, or consequential damages, including loss of profits or data. Our total liability to you for any claim arising out of or relating to these Terms or the Service shall not exceed the amount you paid to iGrowth in the 12 months preceding the claim.`,
+    },
+    {
+      title: '10. Termination',
+      body: `iGrowth may suspend or terminate your account at any time for violation of these Terms, with or without notice. Upon termination, your right to use the Service ceases immediately. You may delete your account at any time via your account settings page.`,
+    },
+    {
+      title: '11. Governing Law',
+      body: `These Terms shall be governed by and construed in accordance with the laws of India. Any disputes arising under these Terms shall be subject to the exclusive jurisdiction of courts located in Chennai, Tamil Nadu.`,
+    },
+    {
+      title: '12. Changes to Terms',
+      body: `We may update these Terms from time to time. We will notify you of material changes via email or an in-app notification. Continued use of the Service after changes become effective constitutes acceptance of the revised Terms.`,
+    },
+    {
+      title: '13. Contact',
+      body: `For questions about these Terms, please contact us at hello@igrowth.app or write to us at: iGrowth, Chennai, Tamil Nadu, India.`,
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-white text-gray-900">
-      <header className="sticky top-0 z-30 border-b border-gray-100 bg-white">
-        <nav className="mx-auto flex w-full max-w-4xl items-center justify-between px-4 py-4 lg:px-8">
-          <button className="text-xl font-extrabold text-black tracking-tight" onClick={() => router.push('/')}>iGrowth</button>
-          <button className="text-sm text-gray-500 hover:text-black transition-colors" onClick={() => router.push('/')}>← Back to home</button>
-        </nav>
-      </header>
+    <div style={{ background: C.bg, color: C.text, fontFamily: "'Inter', system-ui, sans-serif", minHeight: '100vh', lineHeight: 1.7 }}>
+      {/* Nav */}
+      <nav style={{ borderBottom: `1px solid ${C.border}`, padding: '0 clamp(16px,4vw,48px)', height: 64, display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: C.bg2 }}>
+        <Link href="/" style={{ display: 'flex', alignItems: 'center', gap: 9, textDecoration: 'none', color: C.text }}>
+          <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#fff"/>
+            <circle cx="16" cy="16" r="6" stroke="#000" strokeWidth="2.4" fill="none"/>
+            <circle cx="22.5" cy="9.5" r="1.6" fill="#000"/>
+          </svg>
+          <span style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.5px' }}>iGrowth</span>
+        </Link>
+        <Link href="/privacy" style={{ color: C.textMd, textDecoration: 'none', fontSize: 14 }}>Privacy Policy</Link>
+      </nav>
 
-      <main className="mx-auto max-w-4xl px-4 py-12 lg:px-8">
-        <div className="mb-8">
-          <h1 className="text-4xl font-extrabold text-black">Terms of Service</h1>
-          <p className="mt-2 text-sm text-gray-400">Last updated: {lastUpdated}</p>
+      <main style={{ maxWidth: 720, margin: '0 auto', padding: 'clamp(40px,6vw,80px) clamp(16px,4vw,48px)' }}>
+        <div style={{ marginBottom: 48 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '1.2px', color: C.textSm, textTransform: 'uppercase', marginBottom: 14 }}>Legal</div>
+          <h1 style={{ fontSize: 'clamp(28px,5vw,48px)', fontWeight: 900, letterSpacing: '-2px', marginBottom: 14 }}>Terms of Service</h1>
+          <p style={{ color: C.textMd, fontSize: 15 }}>Last updated: April 25, 2026 &nbsp;·&nbsp; Effective immediately</p>
         </div>
 
-        <div className="space-y-8 text-gray-700 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">1. Acceptance of Terms</h2>
-            <p>By accessing or using iGrowth (&ldquo;Service&rdquo;), you agree to be bound by these Terms of Service (&ldquo;Terms&rdquo;). If you do not agree to these Terms, please do not use the Service.</p>
-          </section>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 36 }}>
+          {sections.map(sec => (
+            <section key={sec.title}>
+              <h2 style={{ fontSize: 17, fontWeight: 700, marginBottom: 10, letterSpacing: '-0.3px' }}>{sec.title}</h2>
+              <p style={{ color: C.textMd, fontSize: 14.5, lineHeight: 1.85 }}>{sec.body}</p>
+            </section>
+          ))}
+        </div>
 
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">2. Description of Service</h2>
-            <p>iGrowth is an Instagram creator management platform that helps creators automate Instagram DMs, manage brand deals, track collaborations, and analyse content performance. The Service uses Instagram&apos;s official Graph API and operates in compliance with Meta&apos;s Platform Policies.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">3. Eligibility</h2>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>You must be at least 18 years of age to use this Service.</li>
-              <li>You must have a valid Instagram Business or Creator account to access all features.</li>
-              <li>By using the Service you represent that you have the legal authority to agree to these Terms.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">4. Account Registration</h2>
-            <p>You must create an account to use iGrowth. You agree to provide accurate, current, and complete information during registration. Notify us immediately at <a href="mailto:support@afforal.com" className="text-black underline font-medium">support@afforal.com</a> if you suspect any unauthorised access.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">5. Instagram Integration</h2>
-            <p>By connecting your Instagram account, you authorise iGrowth to access certain data through Instagram&apos;s API. You remain responsible for your Instagram account and all content posted thereon. iGrowth will never post content on your behalf without your explicit instruction.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">6. Acceptable Use</h2>
-            <p className="mb-3">You agree not to use the Service to:</p>
-            <ul className="list-disc pl-6 space-y-2">
-              <li>Violate any applicable law or regulation, including Meta&apos;s Platform Policies.</li>
-              <li>Send spam, unsolicited messages, or abusive content.</li>
-              <li>Reverse engineer, scrape, or attempt to extract underlying code or data.</li>
-              <li>Circumvent usage limits or access controls.</li>
-              <li>Impersonate another person or entity.</li>
-              <li>Upload or transmit viruses or malicious code.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">7. Subscription and Billing</h2>
-            <p>iGrowth offers free and paid subscription plans. Paid plans are billed monthly or annually as selected. All prices are in Indian Rupees (INR). Subscription fees are non-refundable except as required by law. You may cancel your subscription at any time; access continues until the end of the current billing period. We reserve the right to modify pricing with 30 days&apos; advance notice.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">8. Intellectual Property</h2>
-            <p>All content, features, and functionality of the Service are owned by iGrowth / Afforal and are protected by applicable intellectual property laws. You retain all rights to your own content.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">9. Disclaimers</h2>
-            <p>The Service is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo; without warranties of any kind. We are not responsible for Instagram API changes, downtime, or data loss caused by Instagram or Meta.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">10. Limitation of Liability</h2>
-            <p>To the maximum extent permitted by law, iGrowth shall not be liable for any indirect, incidental, special, consequential, or punitive damages. Our total aggregate liability shall not exceed the amounts paid by you in the 12 months preceding the claim.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">11. Termination</h2>
-            <p>We reserve the right to suspend or terminate your account at any time for violations of these Terms. Upon termination, your data will be deleted in accordance with our Privacy Policy.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">12. Changes to Terms</h2>
-            <p>We may update these Terms from time to time. Continued use of the Service after changes constitute your acceptance of the revised Terms.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">13. Governing Law</h2>
-            <p>These Terms are governed by the laws of India. Any disputes shall be subject to the exclusive jurisdiction of courts in India.</p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-bold text-black mb-3">14. Contact</h2>
-            <p>For questions about these Terms: <a href="mailto:support@afforal.com" className="text-black underline font-medium">support@afforal.com</a></p>
-          </section>
+        <div style={{ marginTop: 60, paddingTop: 32, borderTop: `1px solid ${C.border}`, display: 'flex', gap: 16, flexWrap: 'wrap' }}>
+          <Link href="/" style={{ color: C.textMd, textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>← Back to Home</Link>
+          <Link href="/privacy" style={{ color: C.textMd, textDecoration: 'none', fontSize: 14, fontWeight: 500 }}>Privacy Policy →</Link>
         </div>
       </main>
 
-      <footer className="mt-10 border-t border-gray-100 py-6 text-center text-sm text-gray-400">
-        © 2026 iGrowth · <a href="mailto:support@afforal.com" className="hover:text-black transition-colors">support@afforal.com</a>
-      </footer>
+      <style>{`@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap'); * { box-sizing: border-box; margin: 0; padding: 0; } body { -webkit-font-smoothing: antialiased; }`}</style>
     </div>
   )
 }
