@@ -1,136 +1,205 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import {
-  Zap, LayoutDashboard, MessageCircle, Settings, Users,
-  BarChart3, Bell, Menu, X
+  LayoutDashboard, MessageCircle, Zap, Users,
+  BarChart3, Settings, Bell, Menu, X, Sparkles,
+  TrendingUp, ChevronRight
 } from 'lucide-react'
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Overview',        href: '/dashboard' },
-  { icon: MessageCircle,   label: 'Conversations',   href: '/dashboard/conversations' },
-  { icon: Zap,             label: 'Automations',     href: '/dashboard/automations' },
-  { icon: Users,           label: 'Followers CRM',   href: '/dashboard/followers' },
-  { icon: BarChart3,       label: 'Insights',        href: '/dashboard/insights' },
-  { icon: Settings,        label: 'Settings',        href: '/dashboard/settings' },
+  { icon: LayoutDashboard, label: 'Overview',      href: '/dashboard' },
+  { icon: MessageCircle,   label: 'Conversations', href: '/dashboard/conversations', badge: '5' },
+  { icon: Zap,             label: 'Automations',   href: '/dashboard/automations' },
+  { icon: Users,           label: 'Contacts',      href: '/dashboard/followers' },
+  { icon: BarChart3,       label: 'Insights',      href: '/dashboard/insights' },
+  { icon: Settings,        label: 'Settings',      href: '/dashboard/settings' },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [notifOpen, setNotifOpen] = useState(false)
-  const pathname = usePathname()
-  const { user } = useUser()
+  const [notifOpen, setNotifOpen]     = useState(false)
+  const [scrolled, setScrolled]       = useState(false)
+  const pathname  = usePathname()
+  const { user }  = useUser()
 
-  const activeLabel = navItems.find(n =>
+  const activeItem = navItems.find(n =>
     n.href === '/dashboard' ? pathname === n.href : pathname.startsWith(n.href)
-  )?.label ?? 'Overview'
+  )
 
-  const firstName = user?.firstName ?? 'there'
-  const avatarLetter = (user?.firstName?.[0] ?? user?.emailAddresses?.[0]?.emailAddress?.[0] ?? 'U').toUpperCase()
+  useEffect(() => {
+    const el = document.querySelector('.main-scroll')
+    if (!el) return
+    const handler = () => setScrolled(el.scrollTop > 8)
+    el.addEventListener('scroll', handler)
+    return () => el.removeEventListener('scroll', handler)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[#0a0a14] text-white flex">
+    <div style={{ background: 'var(--bg)' }} className="min-h-screen text-white flex">
 
-      {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-60 bg-[#0f0e1c] border-r border-white/8 flex flex-col transition-transform duration-200
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+      {/* ── Sidebar ────────────────────────────────────────────── */}
+      <aside
+        style={{ background: 'var(--surface-1)', borderRight: '1px solid var(--border)' }}
+        className={`fixed inset-y-0 left-0 z-50 w-56 flex flex-col transition-transform duration-200
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
 
-        <div className="flex items-center gap-2.5 px-5 h-16 border-b border-white/8 flex-shrink-0">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-md shadow-violet-500/30">
-            <Zap className="w-4 h-4 text-white" fill="white" />
+        {/* Logo */}
+        <div style={{ borderBottom: '1px solid var(--border)' }}
+          className="flex items-center gap-2.5 px-4 h-14 flex-shrink-0">
+          <div className="w-7 h-7 rounded-lg bg-white flex items-center justify-center flex-shrink-0">
+            <Sparkles className="w-3.5 h-3.5 text-black" fill="black" />
           </div>
-          <span className="text-lg font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">iGrowth</span>
-          <button onClick={() => setSidebarOpen(false)} className="ml-auto lg:hidden text-white/40 hover:text-white" aria-label="Close">
+          <div className="flex-1 min-w-0">
+            <p className="text-[13px] font-bold text-white leading-tight">Afforal</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="leading-tight">IG Growth</p>
+          </div>
+          <button onClick={() => setSidebarOpen(false)}
+            className="lg:hidden ml-auto" style={{ color: 'var(--text-muted)' }}
+            aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {navItems.map(({ icon: Icon, label, href }) => {
+        {/* Nav */}
+        <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
+          {navItems.map(({ icon: Icon, label, href, badge }) => {
             const isActive = href === '/dashboard' ? pathname === href : pathname.startsWith(href)
             return (
               <Link key={label} href={href} onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                  isActive
-                    ? 'bg-violet-500/15 text-violet-300 border border-violet-500/25'
-                    : 'text-white/45 hover:text-white hover:bg-white/5'
-                }`}>
-                <Icon className="w-4 h-4 flex-shrink-0" />
-                {label}
-                {label === 'Conversations' && (
-                  <span className="ml-auto bg-violet-500 text-white text-xs rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">5</span>
+                style={isActive
+                  ? { background: 'var(--accent-dim)', color: 'var(--accent)', borderColor: 'rgba(255,255,255,0.12)' }
+                  : { color: 'var(--text-secondary)' }
+                }
+                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all border
+                  ${ isActive ? 'border' : 'border-transparent hover:bg-white/5 hover:text-white' }`}>
+                <Icon className="w-[15px] h-[15px] flex-shrink-0" />
+                <span className="flex-1">{label}</span>
+                {badge && (
+                  <span className="bg-white text-black text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
+                    {badge}
+                  </span>
                 )}
+                {isActive && <ChevronRight className="w-3 h-3 opacity-40" />}
               </Link>
             )
           })}
         </nav>
 
-        {/* User area — Clerk UserButton */}
-        <div className="px-3 py-4 border-t border-white/8 flex-shrink-0">
-          <div className="flex items-center gap-3 px-2 py-2">
+        {/* Plan badge */}
+        <div className="px-3 pb-3">
+          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)' }}
+            className="rounded-xl p-3 space-y-2">
+            <div className="flex items-center justify-between">
+              <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Free plan</span>
+              <span style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--text-secondary)', fontSize: '10px' }}
+                className="px-2 py-0.5 rounded-full font-medium">0/1K DMs</span>
+            </div>
+            <div style={{ background: 'var(--surface-4)', borderRadius: '99px', height: '3px' }}>
+              <div style={{ width: '0%', height: '3px', background: 'white', borderRadius: '99px' }} />
+            </div>
+            <Link href="/dashboard/settings?tab=billing"
+              style={{ background: 'white', color: 'black' }}
+              className="block w-full text-center text-[11px] font-bold py-1.5 rounded-lg hover:bg-white/90 transition-colors">
+              Upgrade to Pro
+            </Link>
+          </div>
+        </div>
+
+        {/* User */}
+        <div style={{ borderTop: '1px solid var(--border)' }} className="px-3 py-3 flex-shrink-0">
+          <div className="flex items-center gap-2.5">
             <UserButton afterSignOutUrl="/login" appearance={{
-              elements: {
-                avatarBox: 'w-8 h-8 rounded-full ring-1 ring-violet-500/30',
-              }
+              elements: { avatarBox: 'w-7 h-7 rounded-full ring-1 ring-white/20' }
             }} />
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-semibold text-white truncate">{user?.fullName ?? 'User'}</div>
-              <div className="text-xs text-white/40 truncate">{user?.emailAddresses?.[0]?.emailAddress ?? ''}</div>
+              <p style={{ fontSize: '12px' }} className="font-semibold text-white truncate">
+                {user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? 'User'}
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '11px' }} className="truncate">
+                {user?.emailAddresses?.[0]?.emailAddress ?? ''}
+              </p>
             </div>
           </div>
         </div>
       </aside>
 
+      {/* Overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 bg-black/60 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 z-40 bg-black/70 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
-      <div className="flex-1 lg:ml-60 flex flex-col min-h-screen">
-        <header className="sticky top-0 z-30 h-16 bg-[#0a0a14]/85 backdrop-blur-md border-b border-white/8 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
+      {/* ── Main ───────────────────────────────────────────────── */}
+      <div className="flex-1 lg:ml-56 flex flex-col min-h-screen">
+
+        {/* Topbar */}
+        <header
+          style={{
+            background: scrolled ? 'rgba(8,8,8,0.9)' : 'transparent',
+            borderBottom: scrolled ? '1px solid var(--border)' : '1px solid transparent',
+            backdropFilter: scrolled ? 'blur(12px)' : 'none',
+            transition: 'all 200ms ease',
+          }}
+          className="sticky top-0 z-30 h-14 flex items-center justify-between px-4 sm:px-6 flex-shrink-0">
+
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden text-white/50 hover:text-white p-1" aria-label="Open menu">
-              <Menu className="w-5 h-5" />
+            <button onClick={() => setSidebarOpen(true)}
+              className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 transition-colors"
+              style={{ color: 'var(--text-muted)' }}
+              aria-label="Open menu">
+              <Menu className="w-4 h-4" />
             </button>
             <div>
-              <h1 className="text-sm font-semibold text-white">{activeLabel}</h1>
-              <p className="text-xs text-white/35">Welcome back, {firstName}</p>
+              <h1 className="text-[13px] font-semibold text-white">{activeItem?.label ?? 'Overview'}</h1>
+              <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
+                Afforal IG Growth
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/25 text-xs text-amber-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" />
-              Instagram not connected
-            </div>
-
+          <div className="flex items-center gap-2">
+            {/* Notification bell */}
             <div className="relative">
               <button onClick={() => setNotifOpen(!notifOpen)}
-                className="relative p-2 text-white/50 hover:text-white hover:bg-white/5 rounded-lg transition-colors" aria-label="Notifications">
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-violet-500" />
+                style={{ color: 'var(--text-muted)' }}
+                className="relative p-2 rounded-lg hover:bg-white/5 hover:text-white transition-colors"
+                aria-label="Notifications">
+                <Bell className="w-4 h-4" />
+                <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-white pulse-dot" />
               </button>
+
               {notifOpen && (
-                <div className="absolute right-0 top-12 w-72 bg-[#14131f] border border-white/10 rounded-2xl shadow-xl shadow-black/40 overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-white/8">
-                    <p className="text-sm font-semibold text-white">Notifications</p>
+                <div
+                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', zIndex: 50 }}
+                  className="absolute right-0 top-11 w-72 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
+                  <div style={{ borderBottom: '1px solid var(--border)' }} className="px-4 py-3 flex items-center justify-between">
+                    <p className="text-[13px] font-semibold text-white">Notifications</p>
+                    <span style={{ background: 'var(--surface-4)', color: 'var(--text-muted)', fontSize: '10px' }}
+                      className="px-2 py-0.5 rounded-full">3 new</span>
                   </div>
                   {[
-                    { msg: 'New lead from Reel: Pricing Tips', time: '2m ago', dot: 'bg-violet-400' },
-                    { msg: '@priya_styles replied to your DM', time: '10m ago', dot: 'bg-green-400' },
-                    { msg: 'Automation "DM Keyword" hit 100 runs', time: '1h ago', dot: 'bg-amber-400' },
+                    { msg: 'New DM from @priya_styles', time: '2m ago', icon: MessageCircle, color: '#22c55e' },
+                    { msg: 'Automation hit 100 runs', time: '10m ago', icon: Zap, color: '#f59e0b' },
+                    { msg: 'New follower milestone: 5K', time: '1h ago', icon: TrendingUp, color: '#3b82f6' },
                   ].map((n, i) => (
-                    <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-white/4 cursor-pointer border-b border-white/5 last:border-0 transition-colors">
-                      <span className={`mt-1.5 w-2 h-2 rounded-full flex-shrink-0 ${n.dot}`} />
-                      <div>
-                        <p className="text-xs text-white/80">{n.msg}</p>
-                        <p className="text-xs text-white/30 mt-0.5">{n.time}</p>
+                    <div key={i}
+                      style={{ borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}
+                      className="flex items-start gap-3 px-4 py-3 hover:bg-white/3 cursor-pointer transition-colors">
+                      <div style={{ background: `${n.color}18`, borderRadius: '8px' }}
+                        className="w-7 h-7 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <n.icon style={{ color: n.color }} className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1">
+                        <p style={{ fontSize: '12px', color: 'var(--text-primary)' }}>{n.msg}</p>
+                        <p style={{ fontSize: '11px', color: 'var(--text-muted)' }} className="mt-0.5">{n.time}</p>
                       </div>
                     </div>
                   ))}
-                  <div className="px-4 py-2 border-t border-white/8">
-                    <button className="text-xs text-violet-400 hover:underline">Mark all as read</button>
+                  <div style={{ borderTop: '1px solid var(--border)' }} className="px-4 py-2.5">
+                    <button style={{ fontSize: '11px', color: 'var(--text-muted)' }}
+                      className="hover:text-white transition-colors">Mark all as read</button>
                   </div>
                 </div>
               )}
@@ -138,7 +207,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="flex-1 px-4 sm:px-6 py-8 max-w-6xl w-full mx-auto">
+        <main className="main-scroll flex-1 px-4 sm:px-6 py-6 max-w-6xl w-full mx-auto overflow-y-auto">
           {children}
         </main>
       </div>
