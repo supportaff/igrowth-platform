@@ -11,14 +11,13 @@ const TABS = [
   { id: 'security',      label: 'Security',      icon: Shield },
 ]
 
+// Instagram Business Login scopes (instagram.com OAuth)
 const INSTAGRAM_OAUTH_SCOPES = [
   'instagram_business_basic',
   'instagram_business_manage_messages',
   'instagram_business_manage_comments',
-  'instagram_business_manage_insights',
   'instagram_business_content_publish',
-  'pages_show_list',
-  'pages_read_engagement',
+  'instagram_business_manage_insights',
 ].join(',')
 
 interface NotifPrefs { notifLeads: boolean; notifDMs: boolean; notifWeekly: boolean }
@@ -70,7 +69,8 @@ export default function SettingsPage() {
     }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
     const state = encodeURIComponent(user?.id ?? 'unknown')
-    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
+    // Use instagram.com OAuth endpoint for Instagram Business Login
+    window.location.href = `https://www.instagram.com/oauth/authorize?force_reauth=true&client_id=${appId}&redirect_uri=${redirectUri}&response_type=code&scope=${INSTAGRAM_OAUTH_SCOPES}&state=${state}`
   }
 
   function handleIGDisconnect() {
@@ -155,8 +155,8 @@ export default function SettingsPage() {
                 <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Requirements</p>
                 {[
                   'Instagram Business or Creator account',
-                  'Connected to a Facebook Page',
-                  'Messaging permissions enabled on your Page',
+                  'Added as Instagram Tester in Meta App Dashboard',
+                  'Tester invite accepted in Instagram app',
                 ].map((req, i) => (
                   <div key={i} className="flex items-center gap-2.5">
                     <div className="w-5 h-5 rounded-full bg-white/8 border border-white/12 flex items-center justify-center flex-shrink-0">
@@ -173,7 +173,7 @@ export default function SettingsPage() {
                 {igLoading ? 'Redirecting to Instagram...' : 'Connect Instagram Business Account'}
                 {!igLoading && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
               </button>
-              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API v21.0.</p>
+              <p className="text-xs text-white/30 text-center">You will be redirected to Instagram to authorize iGrowth. Uses official Meta Instagram Business Login API.</p>
             </>
           ) : (
             <>
