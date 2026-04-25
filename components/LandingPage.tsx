@@ -59,7 +59,8 @@ export default function LandingPage() {
     { num: '03', title: 'Go Live & Grow', desc: 'Activate your automation and watch leads, replies and engagement happen automatically 24/7.' },
   ]
 
-  // Annual pricing = ~20% off monthly
+  // 3 plans: Free / Pro / Business
+  // Annual = ~20% off monthly
   const plans = [
     {
       name: 'Free',
@@ -67,83 +68,68 @@ export default function LandingPage() {
       badge: null,
       monthly: 0,
       annual: 0,
-      desc: 'Try it out — no credit card needed.',
+      desc: 'Try iGrowth risk-free. No credit card needed.',
       highlight: null,
       features: [
-        '500 DMs / month',
-        '500 contacts',
-        'Basic automations',
-        'CRM preview',
-        'Content insights (limited)',
+        '100 DMs / month',
+        '200 contacts in CRM',
+        '1 active automation',
+        'Basic keyword triggers',
+        'Instagram profile insights',
+        'Community support',
       ],
       cta: 'Start for Free',
       ctaHref: '/signup',
     },
     {
-      name: 'Creator',
+      name: 'Pro',
       popular: true,
-      badge: '35–40% cheaper than competitors',
-      monthly: 249,
-      annual: 199,
-      desc: 'Everything you need to turn followers into revenue.',
-      highlight: 'Most popular among solo creators',
+      badge: '40% cheaper than competitors',
+      monthly: 299,
+      annual: 239,
+      desc: 'For creators ready to turn followers into revenue.',
+      highlight: 'Most popular for solo creators',
       features: [
-        'Unlimited automations',
-        'Unlimited DMs',
-        'Unlimited contacts',
-        'Follower CRM',
-        'Smart links',
+        '5,000 DMs / month',
+        'Unlimited contacts in CRM',
+        '10 active automations',
+        'Keyword + story reply triggers',
+        'New follower welcome DMs',
+        'Lead capture (name, email, phone)',
         'Content → conversion analytics',
         'Email support',
       ],
-      cta: 'Start Creator Plan',
-      ctaHref: '/signup?plan=creator',
+      cta: 'Start Pro Plan',
+      ctaHref: '/signup?plan=pro',
     },
     {
-      name: 'Growth',
+      name: 'Business',
       popular: false,
       badge: null,
-      monthly: 349,
-      annual: 279,
-      desc: 'For creators scaling to serious revenue.',
+      monthly: 499,
+      annual: 399,
+      desc: 'Unlimited everything. For serious creators and brands.',
       highlight: null,
       features: [
-        'Everything in Creator',
-        'Advanced segmentation',
+        'Unlimited DMs',
+        'Unlimited contacts in CRM',
+        'Unlimited active automations',
+        'All trigger types',
+        'Advanced audience segmentation',
         'Revenue & order tracking',
         'Re-engagement campaigns',
-        'Higher rate limits',
-        'Priority support',
+        'Multi-account support',
+        'Priority support + onboarding',
       ],
-      cta: 'Start Growth Plan',
-      ctaHref: '/signup?plan=growth',
-    },
-    {
-      name: 'Agency',
-      popular: false,
-      badge: null,
-      monthly: 999,
-      annual: 799,
-      desc: 'Manage multiple clients from one dashboard.',
-      highlight: null,
-      features: [
-        'Multiple Instagram accounts',
-        'Team access',
-        'Client workspaces',
-        'Branded reports',
-        'Dedicated onboarding',
-        'Custom rate limits',
-        'SLA support',
-      ],
-      cta: 'Contact Sales',
-      ctaHref: '#contact',
+      cta: 'Start Business Plan',
+      ctaHref: '/signup?plan=business',
     },
   ]
 
   const testimonialList = [
     { name: 'Sarah K.', handle: '@sarahkbeauty', avatar: 'SK', role: 'Beauty Creator · 180K followers', quote: 'iGrowth completely transformed how I handle DMs. I went from missing leads to capturing 200+ emails a week on autopilot.' },
     { name: 'Marcus T.', handle: '@marcusfitpro', avatar: 'MT', role: 'Fitness Coach · 95K followers', quote: 'The keyword automation is insane. I posted one reel, added a keyword trigger, and woke up to 400 new DM leads the next morning.' },
-    { name: 'Priya R.', handle: '@priyastudio', avatar: 'PR', role: 'Design Agency · 12 clients', quote: 'Managing 12 client accounts from one dashboard saves us 30+ hours a week. The ROI on the Agency plan paid for itself in day one.' },
+    { name: 'Priya R.', handle: '@priyastudio', avatar: 'PR', role: 'Design Agency · 12 clients', quote: 'Managing client accounts from one dashboard saves us 30+ hours a week. The Business plan ROI paid for itself on day one.' },
     { name: 'Luca B.', handle: '@lucaecommerce', avatar: 'LB', role: 'E-commerce Brand · 220K followers', quote: 'Our story reply flow alone generates ₹60K/month in sales. I set it up once and it just runs. Absolutely worth every rupee.' },
   ]
 
@@ -152,7 +138,7 @@ export default function LandingPage() {
     { q: 'Will my account get banned for using automation?', a: 'No. iGrowth uses Meta\'s official API — the same infrastructure Instagram itself endorses for business tools. We never scrape, inject, or simulate human activity.' },
     { q: 'How quickly do automated DMs send?', a: 'Responses are sent within seconds of a trigger event. Your followers experience near-instant replies that feel personal.' },
     { q: 'Can I personalise automated messages?', a: 'Absolutely. Use variables like {{name}}, {{username}}, {{handle}} to personalise every message. Each DM feels handwritten.' },
-    { q: 'What happens if I exceed my DM limit?', a: 'Automations pause gracefully and you\'ll receive an email notification. Upgrade at any time to restore full capacity instantly.' },
+    { q: 'What happens if I exceed my DM limit on Free or Pro?', a: 'Automations pause gracefully and you\'ll receive an email notification. You can upgrade at any time to restore full capacity instantly. Business plan users are never throttled.' },
     { q: 'Is there a free trial for paid plans?', a: 'Yes. All paid plans come with a 7-day free trial — no credit card required. Cancel anytime before the trial ends and you won\'t be charged.' },
   ]
 
@@ -201,7 +187,6 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <section style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '120px 24px 80px', position: 'relative', overflow: 'hidden' }}>
-        {/* Background glow */}
         <div style={{ position: 'absolute', top: '20%', left: '50%', transform: 'translateX(-50%)', width: 700, height: 700, background: `radial-gradient(circle, ${PINK}22 0%, transparent 65%)`, pointerEvents: 'none' }} />
 
         <div ref={hero.ref} style={{ position: 'relative', maxWidth: 800 }}>
@@ -291,16 +276,16 @@ export default function LandingPage() {
 
       {/* ── PRICING ── */}
       <section id="pricing" style={{ padding: 'clamp(60px,8vw,120px) clamp(16px,4vw,60px)' }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto' }}>
+        <div style={{ maxWidth: 960, margin: '0 auto' }}>
           <div ref={pricing.ref} style={{ textAlign: 'center', marginBottom: 48 }}>
             <div style={{ ...fadeUp(pricing.inView, 0), display: 'inline-block', background: 'rgba(225,48,108,0.1)', border: `1px solid rgba(225,48,108,0.25)`, borderRadius: 99, padding: '5px 14px', marginBottom: 16 }}>
               <span style={{ color: PINK, fontSize: 12, fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>Pricing</span>
             </div>
             <h2 style={{ ...fadeUp(pricing.inView, 0.1), fontSize: 'clamp(28px, 4vw, 48px)', fontWeight: 800, letterSpacing: '-1.5px', marginBottom: 12 }}>
-              Cheaper. More powerful. Built for India.
+              Simple pricing. No surprises.
             </h2>
             <p style={{ ...fadeUp(pricing.inView, 0.15), color: 'rgba(255,255,255,0.45)', fontSize: 16, marginBottom: 8 }}>
-              35–40% cheaper than alternatives. No hidden fees. Cancel anytime.
+              Start free. Upgrade when you're ready. Cancel anytime.
             </p>
             <p style={{ ...fadeUp(pricing.inView, 0.18), color: 'rgba(255,255,255,0.3)', fontSize: 13, marginBottom: 28 }}>
               All prices in INR (₹) · GST extra if applicable
@@ -313,9 +298,9 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(260px,100%), 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px,100%), 1fr))', gap: 20 }}>
             {plans.map((plan, i) => (
-              <div key={plan.name} style={{ ...fadeUp(pricing.inView, 0.1 + i * 0.08), position: 'relative', background: plan.popular ? `linear-gradient(135deg, rgba(225,48,108,0.14), rgba(225,48,108,0.04))` : 'rgba(255,255,255,0.03)', border: plan.popular ? `1px solid rgba(225,48,108,0.55)` : '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '32px 24px', display: 'flex', flexDirection: 'column' }}>
+              <div key={plan.name} style={{ ...fadeUp(pricing.inView, 0.1 + i * 0.1), position: 'relative', background: plan.popular ? `linear-gradient(135deg, rgba(225,48,108,0.14), rgba(225,48,108,0.04))` : 'rgba(255,255,255,0.03)', border: plan.popular ? `1px solid rgba(225,48,108,0.55)` : '1px solid rgba(255,255,255,0.08)', borderRadius: 20, padding: '32px 24px', display: 'flex', flexDirection: 'column' }}>
 
                 {plan.popular && (
                   <div style={{ position: 'absolute', top: -14, left: '50%', transform: 'translateX(-50%)', background: PINK, color: '#fff', fontSize: 11, fontWeight: 700, padding: '4px 14px', borderRadius: 99, letterSpacing: '0.5px', whiteSpace: 'nowrap' }}>MOST POPULAR</div>
@@ -366,7 +351,7 @@ export default function LandingPage() {
           {/* Value footnote */}
           <div style={{ textAlign: 'center', marginTop: 36 }}>
             <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 13 }}>
-              💡 Creator plan is ~35–40% cheaper than LinkPlease &amp; similar tools · Free plan never expires · No credit card required
+              💡 All plans include a 7-day free trial · Free plan never expires · No credit card required
             </p>
           </div>
         </div>

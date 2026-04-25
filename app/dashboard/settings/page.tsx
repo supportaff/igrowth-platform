@@ -11,15 +11,15 @@ const TABS = [
   { id: 'security',      label: 'Security',      icon: Shield },
 ]
 
-// ✅ Official Meta Graph API v21+ scopes — all verified "Ready for testing" in Meta dashboard
+// ✅ Valid Meta scopes that work WITHOUT App Review (dev/test apps)
+// instagram_business_* scopes require App Review approval before they work
+// Use these legacy scopes until Meta approves the app:
 const INSTAGRAM_OAUTH_SCOPES = [
-  'instagram_business_basic',            // Read profile info & media
-  'instagram_business_manage_messages',  // Read/send DMs
-  'instagram_business_manage_comments',  // Read comments & @mentions
-  'instagram_business_manage_insights',  // Analytics & post insights
-  'instagram_business_content_publish',  // Post scheduling (future use)
-  'pages_show_list',                     // List Facebook Pages the user manages
-  'pages_read_engagement',               // Read Page-level engagement data
+  'instagram_basic',          // Read profile, media, username
+  'instagram_manage_messages',// Send/receive DMs (requires approved test user)
+  'pages_show_list',          // List Facebook Pages the user manages
+  'pages_messaging',          // Send messages via Page inbox
+  'pages_read_engagement',    // Read Page engagement data
 ].join(',')
 
 interface NotifPrefs { notifLeads: boolean; notifDMs: boolean; notifWeekly: boolean }
@@ -40,7 +40,6 @@ export default function SettingsPage() {
   useEffect(() => {
     const tab = searchParams.get('tab')
     if (tab) setActiveTab(tab)
-    // Check if returning from Instagram OAuth
     const connected = searchParams.get('connected')
     const handle    = searchParams.get('handle')
     const followers = searchParams.get('followers')
@@ -48,11 +47,8 @@ export default function SettingsPage() {
       setIg({ connected: true, handle, followers: Number(followers) || 0, lastSync: 'Just now' })
       setActiveTab('instagram')
     }
-    // Handle errors
     const error = searchParams.get('error')
-    if (error) {
-      console.warn('Instagram OAuth error:', error)
-    }
+    if (error) console.warn('Instagram OAuth error:', error)
   }, [searchParams])
 
   function handleSave() {
@@ -75,7 +71,8 @@ export default function SettingsPage() {
     }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
     const state = encodeURIComponent(user?.id ?? 'unknown')
-    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
+    // Using v19.0 because instagram_basic / instagram_manage_messages are still on v19 endpoint
+    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
   }
 
   function handleIGDisconnect() {
@@ -178,7 +175,7 @@ export default function SettingsPage() {
                 {igLoading ? 'Redirecting to Instagram...' : 'Connect Instagram Business Account'}
                 {!igLoading && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
               </button>
-              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API v21.</p>
+              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API.</p>
             </>
           ) : (
             <>
