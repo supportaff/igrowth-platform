@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { X, Check, Crown, Zap, Loader2 } from 'lucide-react'
-import { PRICING } from '@/lib/plans'
+import { PRICING, type PricingOption } from '@/lib/plans'
 
 const FEATURES = [
   'Unlimited DMs every month',
@@ -30,17 +30,16 @@ export default function UpgradeModal({ open, onClose }: { open: boolean; onClose
 
   if (!open) return null
 
-  const price = PRICING[billing]
+  const price: PricingOption = PRICING[billing]
 
   const handleUpgrade = async () => {
     setError('')
     setLoading(true)
     try {
-      const email    = user?.emailAddresses?.[0]?.emailAddress ?? ''
-      const name     = user?.firstName
+      const email = user?.emailAddresses?.[0]?.emailAddress ?? ''
+      const name  = user?.firstName
         ? `${user.firstName} ${user.lastName ?? ''}`.trim()
         : email.split('@')[0]
-      const chargeAmount = billing === 'annual' ? price.totalAmount! : price.amount
 
       const res = await fetch('/api/payment/payu/initiate', {
         method: 'POST',
@@ -48,20 +47,22 @@ export default function UpgradeModal({ open, onClose }: { open: boolean; onClose
         body: JSON.stringify({
           planId:   price.planId,
           billing:  price.billing,
-          amount:   chargeAmount,
+          amount:   price.totalAmount,
           planName: 'iGrowth Pro',
           userId:   user?.id ?? '',
           email,
           name,
-          phone:    '',
+          phone: '',
         }),
       })
+
       const data = await res.json()
       if (!res.ok || data.error) {
         setError(data.error ?? 'Could not initiate payment. Please try again.')
         setLoading(false)
         return
       }
+
       // Build hidden form and POST to PayU gateway
       const form = document.createElement('form')
       form.method = 'POST'
@@ -198,7 +199,7 @@ export default function UpgradeModal({ open, onClose }: { open: boolean; onClose
             {loading
               ? <><Loader2 style={{ width: 15, height: 15, animation: 'spin 1s linear infinite' }} /> Processing…</>
               : <><Zap style={{ width: 14, height: 14 }} fill="black" />
-                  Pay ₹{billing === 'annual' ? '3,588' : price.amount} via PayU
+                  Pay ₹{billing === 'annual' ? '3,588' : price.totalAmount} via PayU
                 </>
             }
           </button>
