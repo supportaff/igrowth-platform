@@ -7,9 +7,9 @@ const supabase = createClient(
 )
 
 const VERIFY_TOKEN = process.env.INSTAGRAM_WEBHOOK_VERIFY_TOKEN ?? 'igrowth_verify_2026'
-const IG_API = 'https://graph.instagram.com/v21.0'
+const IG_API       = 'https://graph.instagram.com/v21.0'
 
-// ── GET: Meta webhook verification handshake ──────────────
+// ── GET: Meta webhook verification handshake ─────────────
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl
   const mode      = searchParams.get('hub.mode')
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
   const challenge = searchParams.get('hub.challenge')
 
   if (mode === 'subscribe' && token === VERIFY_TOKEN) {
-    console.log('[webhook] Meta verification successful')
+    console.log('[webhook] Meta verification OK')
     return new NextResponse(challenge, { status: 200 })
   }
   return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
@@ -27,137 +27,177 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    console.log('[webhook] Received event:', JSON.stringify(body, null, 2))
+    console.log('[webhook] event:', JSON.stringify(body))
 
-    const entries = body.entry ?? []
-
-    for (const entry of entries) {
-      const igAccountId = entry.id
-
-      // Get Instagram account + access token from DB
-      const { data: account } = await supabase
-        .from('instagram_accounts')
-        .select('user_id, access_token, ig_user_id')
-        .eq('ig_user_id', igAccountId)
-        .single()
-
-      if (!account) continue
-
-      // Fetch all active automations for this user
-      const { data: automations } = await supabase
-        .from('automations')
-        .select('*')
-        .eq('user_id', account.user_id)
-        .eq('status', 'active')
-
-      if (!automations?.length) continue
-
-      // ── Handle DM messages ──
-      const messagingEvents = entry.messaging ?? []
-      for (const event of messagingEvents) {
-        const senderId = event.sender?.id
-        const messageText = event.message?.text ?? ''
-        if (!senderId || !messageText) continue
-
-        // Skip messages sent by the bot itself
-        if (senderId === igAccountId) continue
-
-        for (const auto of automations) {
-          if (auto.trigger !== 'dm_keyword') continue
-          const keywords: string[] = auto.keywords ?? []
-          const matched = keywords.length === 0 || keywords.some((kw: string) =>
-            messageText.toLowerCase().includes(kw.toLowerCase())
-          )
-          if (!matched) continue
-          await executeActions(auto.actions, senderId, account.access_token, account.ig_user_id, supabase, auto.id)
-        }
-      }
-
-      // ── Handle comments (posts) and reel_comments (Reels) ──
-      // FIX: Meta sends field='comments' for posts and field='reel_comments' for Reels.
-      // Previously only 'comments' was checked, breaking all reel_comment automations.
-      const changes = entry.changes ?? []
-      for (const change of changes) {
-        const isPostComment = change.field === 'comments'
-        const isReelComment = change.field === 'reel_comments'
-        if (!isPostComment && !isReelComment) continue
-
-        const commentText = change.value?.text ?? ''
-        const commenterId = change.value?.from?.id
-        const commentId   = change.value?.id
-        if (!commenterId || commenterId === igAccountId) continue
-
-        // Map Meta field name to our trigger type
-        const expectedTrigger = isReelComment ? 'reel_comment' : 'post_comment'
-
-        for (const auto of automations) {
-          // Match specific trigger type, or allow both if automation targets either
-          if (auto.trigger !== expectedTrigger &&
-              !(['post_comment', 'reel_comment'].includes(auto.trigger))) continue
-          // Respect specific trigger selection
-          if (auto.trigger !== expectedTrigger) continue
-
-          const keywords: string[] = auto.keywords ?? []
-          const matched = keywords.length === 0 || keywords.some((kw: string) =>
-            commentText.toLowerCase().includes(kw.toLowerCase())
-          )
-          if (!matched) continue
-          await executeActions(auto.actions, commenterId, account.access_token, account.ig_user_id, supabase, auto.id, commentId)
-        }
-      }
-    }
+    // Meta always expects 200 fast — process async
+    processWebhook(body).catch(e => console.error('[webhook] async error:', e))
 
     return NextResponse.json({ status: 'ok' })
   } catch (err) {
-    console.error('[webhook] Error:', err)
-    return NextResponse.json({ error: 'Internal error' }, { status: 500 })
+    console.error('[webhook] parse error:', err)
+    return NextResponse.json({ status: 'ok' }) // always 200 to Meta
   }
 }
 
-// ── Execute automation actions ────────────────────────────
+async function processWebhook(body: Record<string, unknown>) {
+  const entries = (body.entry as Array<Record<string, unknown>>) ?? []
+
+  for (const entry of entries) {
+    const igAccountId = String(entry.id)
+
+    const { data: account } = await supabase
+      .from('instagram_accounts')
+      .select('user_id, access_token, ig_user_id')
+      .eq('ig_user_id', igAccountId)
+      .single()
+
+    if (!account) {
+      console.warn('[webhook] No account found for ig_user_id:', igAccountId)
+      continue
+    }
+
+    const { data: automations } = await supabase
+      .from('automations')
+      .select('*')
+      .eq('user_id', account.user_id)
+      .eq('status', 'active')
+
+    if (!automations?.length) continue
+
+    // ── DM messages ──
+    const messagingEvents = (entry.messaging as Array<Record<string, unknown>>) ?? []
+    for (const event of messagingEvents) {
+      const sender     = event.sender as Record<string, string>
+      const msgObj     = event.message as Record<string, unknown>
+      const senderId   = sender?.id
+      const msgText    = String(msgObj?.text ?? '')
+      const mid        = String(msgObj?.mid ?? '')
+
+      if (!senderId || !msgText) continue
+      if (senderId === igAccountId) continue  // skip self
+
+      // Dedup: skip if we already processed this message ID
+      if (mid) {
+        const { count } = await supabase
+          .from('automation_logs')
+          .select('id', { count: 'exact', head: true })
+          .eq('sender_id', mid)
+        if ((count ?? 0) > 0) continue
+      }
+
+      for (const auto of automations) {
+        if (auto.trigger !== 'dm_keyword') continue
+        const keywords: string[] = auto.keywords ?? []
+        const matched = keywords.length === 0 ||
+          keywords.some((kw: string) => msgText.toLowerCase().includes(kw.toLowerCase()))
+        if (!matched) continue
+
+        await executeActions(
+          auto.actions, senderId, account.access_token,
+          account.ig_user_id, account.user_id, supabase, auto.id,
+          undefined, 'dm_keyword', msgText
+        )
+      }
+    }
+
+    // ── Post/Reel comments ──
+    const changes = (entry.changes as Array<Record<string, unknown>>) ?? []
+    for (const change of changes) {
+      const field = String(change.field ?? '')
+      if (field !== 'comments' && field !== 'reel_comments') continue
+
+      const val         = change.value as Record<string, unknown>
+      const commentText = String(val?.text ?? '')
+      const from        = val?.from as Record<string, string>
+      const commenterId = from?.id
+      const commentId   = String(val?.id ?? '')
+
+      if (!commenterId || commenterId === igAccountId) continue
+
+      const expectedTrigger = field === 'reel_comments' ? 'reel_comment' : 'post_comment'
+
+      for (const auto of automations) {
+        if (auto.trigger !== expectedTrigger) continue
+        const keywords: string[] = auto.keywords ?? []
+        const matched = keywords.length === 0 ||
+          keywords.some((kw: string) => commentText.toLowerCase().includes(kw.toLowerCase()))
+        if (!matched) continue
+
+        await executeActions(
+          auto.actions, commenterId, account.access_token,
+          account.ig_user_id, account.user_id, supabase, auto.id,
+          commentId, expectedTrigger, commentText
+        )
+      }
+    }
+  }
+}
+
+// ── Execute actions + log each one ───────────────────────
 async function executeActions(
-  actions: Array<{ type: string; message: string; delay: number; tag?: string }>,
+  actions: Array<{ type: string; message: string; delay?: number }>,
   recipientId: string,
   accessToken: string,
   igAccountId: string,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  db: SupabaseClient<any, any, any>,
+  userId: string,
+  db: SupabaseClient,
   automationId: string,
-  commentId?: string
+  commentId?: string,
+  triggerType?: string,
+  messageText?: string
 ) {
   for (const action of actions) {
-    if (action.delay > 0) {
-      await new Promise(r => setTimeout(r, action.delay * 60 * 1000))
+    if ((action.delay ?? 0) > 0) {
+      await new Promise(r => setTimeout(r, (action.delay ?? 0) * 60 * 1000))
     }
+
+    let status       = 'success'
+    let errorMessage = ''
+    let igResponse: unknown = null
 
     try {
       if (action.type === 'send_dm') {
-        await sendDM(recipientId, action.message, accessToken, igAccountId)
+        igResponse = await sendDM(recipientId, action.message, accessToken, igAccountId)
+      } else if (action.type === 'reply_comment' && commentId) {
+        igResponse = await replyComment(commentId, action.message, accessToken)
       }
-
-      if (action.type === 'reply_comment' && commentId) {
-        await replyComment(commentId, action.message, accessToken)
-      }
-    } catch (err) {
-      console.error(`[webhook] Action ${action.type} failed:`, err)
+    } catch (err: unknown) {
+      status       = 'failed'
+      errorMessage = err instanceof Error ? err.message : String(err)
+      console.error(`[webhook] Action ${action.type} failed:`, errorMessage)
     }
+
+    // Log every action attempt
+    await db.from('automation_logs').insert({
+      automation_id:  automationId,
+      user_id:        userId,
+      trigger_type:   triggerType,
+      sender_id:      recipientId,
+      message_text:   messageText,
+      action_type:    action.type,
+      action_message: action.message,
+      status,
+      error_message:  errorMessage || null,
+      ig_response:    igResponse ? JSON.stringify(igResponse) : null,
+    })
   }
 
-  // Increment run count
-  try {
-    await db.rpc('increment_automation_runs', { automation_id: automationId })
-  } catch {
-    // non-critical, ignore
-  }
+  // Increment run counter
+  await db.rpc('increment_automation_runs', { automation_id: automationId })
 }
 
-async function sendDM(recipientId: string, message: string, accessToken: string, igAccountId: string) {
+async function sendDM(
+  recipientId: string,
+  message: string,
+  accessToken: string,
+  igAccountId: string
+) {
   const res = await fetch(`${IG_API}/${igAccountId}/messages`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      recipient: { id: recipientId },
-      message: { text: message },
+      recipient:    { id: recipientId },
+      message:      { text: message },
       access_token: accessToken,
     }),
   })
@@ -168,7 +208,7 @@ async function sendDM(recipientId: string, message: string, accessToken: string,
 
 async function replyComment(commentId: string, message: string, accessToken: string) {
   const res = await fetch(`${IG_API}/${commentId}/replies`, {
-    method: 'POST',
+    method:  'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, access_token: accessToken }),
   })
