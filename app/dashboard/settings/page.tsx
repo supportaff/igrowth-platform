@@ -11,6 +11,17 @@ const TABS = [
   { id: 'security',      label: 'Security',      icon: Shield },
 ]
 
+// ✅ Official Meta Graph API v21+ scopes — all verified "Ready for testing" in Meta dashboard
+const INSTAGRAM_OAUTH_SCOPES = [
+  'instagram_business_basic',            // Read profile info & media
+  'instagram_business_manage_messages',  // Read/send DMs
+  'instagram_business_manage_comments',  // Read comments & @mentions
+  'instagram_business_manage_insights',  // Analytics & post insights
+  'instagram_business_content_publish',  // Post scheduling (future use)
+  'pages_show_list',                     // List Facebook Pages the user manages
+  'pages_read_engagement',               // Read Page-level engagement data
+].join(',')
+
 interface NotifPrefs { notifLeads: boolean; notifDMs: boolean; notifWeekly: boolean }
 interface IGState { connected: boolean; handle: string; followers: number; lastSync: string }
 
@@ -63,10 +74,8 @@ export default function SettingsPage() {
       return
     }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
-    // ✅ Correct Meta Graph API scopes (v21+)
-    const scope = 'instagram_business_basic,instagram_business_manage_messages,instagram_business_manage_comments,instagram_business_content_publish,pages_show_list,pages_read_engagement'
     const state = encodeURIComponent(user?.id ?? 'unknown')
-    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${scope}&response_type=code&state=${state}`
+    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
   }
 
   function handleIGDisconnect() {
