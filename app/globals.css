@@ -71,7 +71,7 @@ code {
         --surface-2: #f3f3f3;
         --surface-3: #ebebeb;
         --text-muted: #737373;
-        --border: rgba(0,0,0,0.08);
+        --ig-border: rgba(0,0,0,0.08);
         --green: #16a34a;
 
         /* ─── Status box tokens ─── */
@@ -137,7 +137,7 @@ code {
 
 @layer base {
     * {
-        @apply border-border;
+        border-color: hsl(var(--border));
     }
 
     html,
@@ -149,7 +149,8 @@ code {
     }
 
     body {
-        @apply bg-background text-foreground;
+        background-color: hsl(var(--background));
+        color: hsl(var(--foreground));
     }
 }
 
@@ -194,11 +195,6 @@ button[role="switch"][data-state="checked"] {
 [data-radix-switch-thumb],
 span[data-radix-switch-thumb] {
     background-color: #ffffff !important;
-}
-
-/* ── All text globally must be dark on white ── */
-p, span, label, h1, h2, h3, h4, h5, h6, li, td, th, div, button, a, input, textarea {
-    color: inherit;
 }
 
 /* ── Shadcn card/dialog/popover ── */
