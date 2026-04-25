@@ -11,15 +11,14 @@ const TABS = [
   { id: 'security',      label: 'Security',      icon: Shield },
 ]
 
-// ✅ Valid Meta scopes that work WITHOUT App Review (dev/test apps)
-// instagram_business_* scopes require App Review approval before they work
-// Use these legacy scopes until Meta approves the app:
 const INSTAGRAM_OAUTH_SCOPES = [
-  'instagram_basic',          // Read profile, media, username
-  'instagram_manage_messages',// Send/receive DMs (requires approved test user)
-  'pages_show_list',          // List Facebook Pages the user manages
-  'pages_messaging',          // Send messages via Page inbox
-  'pages_read_engagement',    // Read Page engagement data
+  'instagram_business_basic',
+  'instagram_business_manage_messages',
+  'instagram_business_manage_comments',
+  'instagram_business_manage_insights',
+  'instagram_business_content_publish',
+  'pages_show_list',
+  'pages_read_engagement',
 ].join(',')
 
 interface NotifPrefs { notifLeads: boolean; notifDMs: boolean; notifWeekly: boolean }
@@ -71,8 +70,7 @@ export default function SettingsPage() {
     }
     const redirectUri = encodeURIComponent(`${window.location.origin}/api/instagram/callback`)
     const state = encodeURIComponent(user?.id ?? 'unknown')
-    // Using v19.0 because instagram_basic / instagram_manage_messages are still on v19 endpoint
-    window.location.href = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
+    window.location.href = `https://www.facebook.com/v21.0/dialog/oauth?client_id=${appId}&redirect_uri=${redirectUri}&scope=${INSTAGRAM_OAUTH_SCOPES}&response_type=code&state=${state}`
   }
 
   function handleIGDisconnect() {
@@ -175,7 +173,7 @@ export default function SettingsPage() {
                 {igLoading ? 'Redirecting to Instagram...' : 'Connect Instagram Business Account'}
                 {!igLoading && <ExternalLink className="w-3.5 h-3.5 ml-1" />}
               </button>
-              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API.</p>
+              <p className="text-xs text-white/30 text-center">You will be redirected to Facebook to authorize iGrowth. Uses official Meta Graph API v21.0.</p>
             </>
           ) : (
             <>
