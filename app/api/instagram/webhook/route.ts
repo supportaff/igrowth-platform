@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 // ── Safe JSON parse helper ───────────────────────────────
 function safeParseJSON<T>(val: unknown, fallback: T): T {
   if (val === null || val === undefined) return fallback
-  if (typeof val === 'object') return val as T   // already parsed by Supabase driver
+  if (typeof val === 'object') return val as T
   if (typeof val === 'string') {
     try { return JSON.parse(val) as T } catch { return fallback }
   }
@@ -56,8 +56,6 @@ async function processWebhook(body: Record<string, unknown>) {
     const igAccountId = String(entry.id)
     console.log(`[webhook] processing entry for ig_account_id=${igAccountId}`)
 
-    // FIX 1: Look up instagram_accounts by ig_user_id
-    // This table is now populated by the OAuth callback
     const { data: account, error: accErr } = await supabase
       .from('instagram_accounts')
       .select('user_id, access_token, ig_user_id')
@@ -66,8 +64,6 @@ async function processWebhook(body: Record<string, unknown>) {
 
     if (accErr || !account) {
       console.warn('[webhook] No account found for ig_user_id:', igAccountId, accErr?.message)
-      // Fallback: try to find any account with a matching user_id pattern
-      // This handles cases where the igAccountId in the webhook != stored ig_user_id
       const { data: allAccounts } = await supabase
         .from('instagram_accounts')
         .select('user_id, access_token, ig_user_id')
@@ -77,7 +73,6 @@ async function processWebhook(body: Record<string, unknown>) {
         console.warn('[webhook] No instagram_accounts rows at all — user needs to reconnect Instagram')
         continue
       }
-      // Use first account as fallback (single-tenant scenario)
       console.log('[webhook] Using fallback account:', allAccounts[0].ig_user_id)
       Object.assign(entry, { _account: allAccounts[0] })
     }
@@ -85,7 +80,6 @@ async function processWebhook(body: Record<string, unknown>) {
     const resolvedAccount = (entry._account as typeof account) ?? account
     if (!resolvedAccount) continue
 
-    // FIX 2: Fetch automations using the resolved user_id
     const { data: rawAutomations } = await supabase
       .from('automations')
       .select('*')
@@ -97,7 +91,6 @@ async function processWebhook(body: Record<string, unknown>) {
       continue
     }
 
-    // FIX 3: Parse JSON string fields that Supabase may return as strings
     const automations = rawAutomations.map(a => ({
       ...a,
       keywords:   safeParseJSON<string[]>(a.keywords, []),
@@ -117,11 +110,10 @@ async function processWebhook(body: Record<string, unknown>) {
       const mid      = String(msgObj?.mid ?? '')
 
       if (!senderId || !msgText) continue
-      if (senderId === igAccountId) continue  // skip self-messages
+      if (senderId === igAccountId) continue
 
       console.log(`[webhook] DM from ${senderId}: "${msgText}" (mid=${mid})`)
 
-      // FIX 4: Dedup using message_id column (not sender_id)
       if (mid) {
         const { count } = await supabase
           .from('automation_logs')
@@ -135,14 +127,11 @@ async function processWebhook(body: Record<string, unknown>) {
 
       for (const auto of automations) {
         if (auto.trigger !== 'dm_keyword') continue
-
         const keywords: string[] = auto.keywords ?? []
-        // Empty keywords = match ALL messages
         const matched = keywords.length === 0 ||
           keywords.some((kw: string) => msgText.toLowerCase().includes(kw.toLowerCase()))
 
         console.log(`[webhook] Automation "${auto.name}" keyword match: ${matched} (keywords: [${keywords.join(', ')}])`)
-
         if (!matched) continue
 
         await executeActions(
@@ -228,13 +217,12 @@ async function executeActions(
       console.error(`[webhook] Action ${action.type} failed:`, errorMessage)
     }
 
-    // Log every action attempt with message_id for dedup
     await db.from('automation_logs').insert({
       automation_id:  automationId,
       user_id:        userId,
       trigger_type:   triggerType,
       sender_id:      recipientId,
-      message_id:     messageId ?? null,   // FIX 4: store mid here for dedup
+      message_id:     messageId ?? null,
       message_text:   messageText,
       action_type:    action.type,
       action_message: action.message,
@@ -244,8 +232,10 @@ async function executeActions(
     })
   }
 
-  // Increment run counter on automation
-  await db.rpc('increment_automation_runs', { automation_id: automationId })
+  // FIX: wrap in Promise.resolve() so .catch() is available on PromiseLike
+  await Promise.resolve(
+    db.rpc('increment_automation_runs', { automation_id: automationId })
+  )
     .then(() => console.log(`[webhook] Incremented run counter for ${automationId}`))
     .catch(e  => console.error('[webhook] increment_automation_runs failed:', e))
 }
