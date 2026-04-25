@@ -1,112 +1,116 @@
 'use client'
 import { useState } from 'react'
-import { Zap, Plus, Play, Pause, Trash2, TrendingUp } from 'lucide-react'
+import { Zap, Plus, ToggleLeft, ToggleRight, Edit2, Trash2, Play, MessageCircle, Hash, Heart, BookmarkIcon } from 'lucide-react'
 
-const automations = [
-  { id: 1, name: "DM Keyword: 'price'",     trigger: 'DM keyword',   runs: 89,  leads: 24, status: 'Active',  created: 'Apr 10' },
-  { id: 2, name: 'Comment: Pricing Reel',    trigger: 'Post comment', runs: 54,  leads: 11, status: 'Active',  created: 'Apr 8'  },
-  { id: 3, name: 'Story Reply Flow',         trigger: 'Story reply',  runs: 23,  leads: 6,  status: 'Paused',  created: 'Apr 5'  },
-  { id: 4, name: "DM Keyword: 'link'",      trigger: 'DM keyword',   runs: 112, leads: 31, status: 'Active',  created: 'Apr 1'  },
-  { id: 5, name: 'Welcome DM - New Follow', trigger: 'New follower',  runs: 67,  leads: 18, status: 'Active',  created: 'Mar 28' },
-  { id: 6, name: 'Flash Sale Broadcast',    trigger: 'Manual',        runs: 200, leads: 44, status: 'Paused',  created: 'Mar 22' },
+const AUTOMATIONS = [
+  { id: 1, name: "DM Keyword: 'price'",    trigger: 'DM contains keyword',  keyword: 'price',   action: 'Send product link',       runs: 89,  status: 'active',  lastRun: '2m ago' },
+  { id: 2, name: 'Comment: Pricing Reel',   trigger: 'Post comment',          keyword: 'link',    action: 'Reply with DM',           runs: 54,  status: 'active',  lastRun: '8m ago' },
+  { id: 3, name: 'Story Reply Flow',         trigger: 'Story reply',           keyword: 'any',     action: 'Send welcome sequence',   runs: 23,  status: 'paused',  lastRun: '3d ago' },
+  { id: 4, name: 'New Follower Welcome',     trigger: 'New follower',          keyword: '—',       action: 'Send welcome DM',         runs: 142, status: 'active',  lastRun: '1h ago' },
+  { id: 5, name: 'Post Like Thank You',      trigger: 'Post like',             keyword: '—',       action: 'Send thank you DM',       runs: 0,   status: 'draft',   lastRun: 'Never' },
 ]
 
-const templates = [
-  { name: 'Lead Capture DM',    desc: 'Auto-reply to DM keywords with a lead form link',  icon: '💬' },
-  { name: 'Comment to DM',      desc: 'DM everyone who comments on a specific post',       icon: '📣' },
-  { name: 'New Follower Welcome', desc: 'Send a welcome message to every new follower',    icon: '👋' },
-  { name: 'Story CTA Flow',     desc: 'Follow up with story viewers who reply',            icon: '🎯' },
-]
+const triggerIcons: Record<string, React.ElementType> = {
+  'DM contains keyword': MessageCircle,
+  'Post comment': Hash,
+  'Story reply': BookmarkIcon,
+  'New follower': Heart,
+  'Post like': Heart,
+}
+
+const statusStyle: Record<string, string> = {
+  active: 'bg-green-500/15 text-green-300 border-green-500/25',
+  paused: 'bg-amber-500/15 text-amber-300 border-amber-500/25',
+  draft:  'bg-white/5 text-white/35 border-white/10',
+}
 
 export default function AutomationsPage() {
-  const [flows, setFlows] = useState(automations)
+  const [items, setItems] = useState(AUTOMATIONS)
 
-  function toggle(id: number) {
-    setFlows(f => f.map(a => a.id === id ? { ...a, status: a.status === 'Active' ? 'Paused' : 'Active' } : a))
+  function toggleStatus(id: number) {
+    setItems(prev => prev.map(a =>
+      a.id === id
+        ? { ...a, status: a.status === 'active' ? 'paused' : a.status === 'paused' ? 'active' : a.status }
+        : a
+    ))
   }
 
+  const active = items.filter(a => a.status === 'active').length
+  const totalRuns = items.reduce((s, a) => s + a.runs, 0)
+
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-xl font-bold text-white">Automations</h2>
-          <p className="text-xs text-white/40 mt-0.5">{flows.filter(f => f.status === 'Active').length} active flows · {flows.reduce((s, f) => s + f.runs, 0)} total runs this month</p>
-        </div>
-        <button className="flex items-center gap-2 bg-gradient-to-r from-brand-500 to-accent-500 text-white text-xs font-semibold px-4 py-2.5 rounded-xl hover:opacity-90 transition-all">
-          <Plus className="w-3.5 h-3.5" /> New Flow
-        </button>
-      </div>
+    <div className="space-y-6">
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Total Runs',   value: flows.reduce((s, f) => s + f.runs, 0).toString(),   color: 'text-brand-400' },
-          { label: 'Leads Captured', value: flows.reduce((s, f) => s + f.leads, 0).toString(), color: 'text-green-400' },
-          { label: 'Active Flows', value: flows.filter(f => f.status === 'Active').length.toString(), color: 'text-accent-400' },
+          { label: 'Active Flows',    value: active,    color: 'text-green-400' },
+          { label: 'Total Runs',      value: totalRuns, color: 'text-violet-400' },
+          { label: 'Avg. Reply Time', value: '< 1s',    color: 'text-fuchsia-400' },
         ].map(s => (
-          <div key={s.label} className="bg-white/5 border border-white/10 rounded-2xl p-4 text-center">
-            <div className={`text-2xl font-extrabold ${s.color}`}>{s.value}</div>
-            <div className="text-xs text-white/40 mt-1">{s.label}</div>
+          <div key={s.label} className="bg-white/4 border border-white/8 rounded-2xl p-5">
+            <div className={`text-2xl font-extrabold ${s.color} mb-1`}>{s.value}</div>
+            <div className="text-xs text-white/40">{s.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Flow table */}
-      <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 border-b border-white/8">
-          <h3 className="text-sm font-bold text-white">Your Flows</h3>
-        </div>
-        <div className="divide-y divide-white/5">
-          {flows.map(a => (
-            <div key={a.id} className="flex items-center gap-4 px-5 py-4 hover:bg-white/3 transition-colors">
-              <div className="w-9 h-9 rounded-xl bg-accent-500/15 border border-accent-500/25 flex items-center justify-center flex-shrink-0">
-                <Zap className="w-4 h-4 text-accent-400" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-semibold text-white">{a.name}</div>
-                <div className="text-xs text-white/40 mt-0.5">{a.trigger} · Created {a.created}</div>
-              </div>
-              <div className="hidden sm:flex items-center gap-6 text-xs text-white/40">
-                <div className="text-center">
-                  <div className="font-bold text-white">{a.runs}</div>
-                  <div>runs</div>
-                </div>
-                <div className="text-center">
-                  <div className="font-bold text-green-400">{a.leads}</div>
-                  <div>leads</div>
-                </div>
-              </div>
-              <span className={`text-xs px-2.5 py-1 rounded-full border ${
-                a.status === 'Active'
-                  ? 'bg-green-500/15 text-green-300 border-green-500/25'
-                  : 'bg-white/5 text-white/40 border-white/10'
-              }`}>{a.status}</span>
-              <button
-                onClick={() => toggle(a.id)}
-                className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 transition-colors"
-                aria-label={a.status === 'Active' ? 'Pause' : 'Resume'}
-              >
-                {a.status === 'Active'
-                  ? <Pause className="w-3.5 h-3.5 text-white/50" />
-                  : <Play  className="w-3.5 h-3.5 text-white/50" />}
-              </button>
-            </div>
-          ))}
-        </div>
+      {/* Header + create button */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold text-white">All Automations</h2>
+        <button className="flex items-center gap-1.5 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white text-xs font-semibold px-3 py-2 rounded-xl hover:opacity-90 transition-all shadow-md shadow-violet-500/20">
+          <Plus className="w-3.5 h-3.5" /> New automation
+        </button>
       </div>
 
-      {/* Templates */}
-      <div>
-        <h3 className="text-sm font-bold text-white mb-4">Start from a Template</h3>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {templates.map(t => (
-            <button key={t.name} className="text-left p-4 bg-white/5 border border-white/10 rounded-2xl hover:bg-white/8 hover:border-brand-500/30 transition-all group">
-              <div className="text-2xl mb-2">{t.icon}</div>
-              <div className="text-sm font-semibold text-white group-hover:text-brand-300 transition-colors">{t.name}</div>
-              <div className="text-xs text-white/40 mt-1">{t.desc}</div>
-            </button>
-          ))}
-        </div>
+      {/* Automation list */}
+      <div className="space-y-3">
+        {items.map(a => {
+          const TriggerIcon = triggerIcons[a.trigger] ?? Zap
+          return (
+            <div key={a.id} className="bg-white/4 border border-white/8 rounded-2xl p-5 hover:bg-white/6 transition-colors">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/15 border border-violet-500/20 flex items-center justify-center flex-shrink-0">
+                  <TriggerIcon className="w-4 h-4 text-violet-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-white">{a.name}</p>
+                      <p className="text-xs text-white/40 mt-0.5">{a.trigger} → {a.action}</p>
+                      {a.keyword !== '—' && (
+                        <span className="inline-block mt-1.5 text-xs bg-white/8 border border-white/12 text-white/60 px-2 py-0.5 rounded-full font-mono">"{a.keyword}"</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full border ${statusStyle[a.status]}`}>
+                        {a.status.charAt(0).toUpperCase() + a.status.slice(1)}
+                      </span>
+                      <button onClick={() => toggleStatus(a.id)} className="text-white/30 hover:text-white transition-colors" aria-label="Toggle status">
+                        {a.status === 'active'
+                          ? <ToggleRight className="w-5 h-5 text-green-400" />
+                          : <ToggleLeft className="w-5 h-5" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 mt-3">
+                    <span className="text-xs text-white/30">{a.runs} runs</span>
+                    <span className="text-xs text-white/30">Last run: {a.lastRun}</span>
+                    <div className="flex items-center gap-2 ml-auto">
+                      <button className="p-1.5 rounded-lg text-white/30 hover:text-white hover:bg-white/8 transition-colors"><Edit2 className="w-3.5 h-3.5" /></button>
+                      <button className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/10 transition-colors"><Trash2 className="w-3.5 h-3.5" /></button>
+                      {a.status === 'draft' && (
+                        <button className="flex items-center gap-1 text-xs bg-violet-500/15 text-violet-400 border border-violet-500/25 px-2 py-1 rounded-lg hover:bg-violet-500/25 transition-colors">
+                          <Play className="w-3 h-3" /> Activate
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

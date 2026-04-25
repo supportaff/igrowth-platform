@@ -2,167 +2,201 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Zap, Eye, EyeOff, ArrowRight, Check } from 'lucide-react'
+import { Zap, Eye, EyeOff, ArrowRight, CheckCircle2, Instagram } from 'lucide-react'
 
-const perks = [
-  'Free plan \u2014 no credit card needed',
-  'DM automation live in under 5 minutes',
-  'Follower CRM built in from day one',
-  'Content-to-revenue analytics included',
+const PLANS = [
+  { id: 'starter', label: 'Starter', price: 'Free', desc: '500 DMs / month' },
+  { id: 'pro',     label: 'Pro',     price: '₹999/mo', desc: 'Unlimited DMs' },
+  { id: 'agency', label: 'Agency',  price: '₹2,499/mo', desc: 'Multi-account' },
 ]
 
 export default function SignupPage() {
   const router = useRouter()
+  const [step, setStep] = useState(1)
   const [showPass, setShowPass] = useState(false)
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [selectedPlan, setSelectedPlan] = useState('starter')
+  const [form, setForm] = useState({ name: '', email: '', password: '', brand: '' })
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
+  function update(key: string, val: string) {
+    setForm(f => ({ ...f, [key]: val }))
     setError('')
-    if (!name || !email || !password) {
-      setError('Please fill in all fields.')
-      return
-    }
-    if (password.length < 8) {
-      setError('Password must be at least 8 characters.')
-      return
-    }
+  }
+
+  async function handleStep1(e: React.FormEvent) {
+    e.preventDefault()
+    if (!form.name || !form.email || !form.password) { setError('Please fill in all fields.'); return }
+    if (form.password.length < 6) { setError('Password must be at least 6 characters.'); return }
+    setStep(2)
+    setError('')
+  }
+
+  async function handleStep2(e: React.FormEvent) {
+    e.preventDefault()
     setLoading(true)
-    await new Promise(r => setTimeout(r, 1200))
-    // Dummy signup — redirect straight to dashboard
+    await new Promise(r => setTimeout(r, 1000))
     router.push('/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f1a] text-white flex flex-col">
-      <nav className="w-full z-50 bg-[#0f0f1a]/80 backdrop-blur-md border-b border-white/10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <div className="min-h-screen bg-[#0a0a14] text-white flex flex-col">
+      {/* Glows */}
+      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-fuchsia-600/10 rounded-full blur-[140px] pointer-events-none" />
+      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-violet-600/8 rounded-full blur-[120px] pointer-events-none" />
+
+      {/* Nav */}
+      <nav className="w-full z-50 bg-[#0a0a14]/80 backdrop-blur-md border-b border-white/8">
+        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center">
               <Zap className="w-4 h-4 text-white" fill="white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-brand-400 via-brand-300 to-accent-400 bg-clip-text text-transparent">iGrowth</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">iGrowth</span>
           </Link>
-          <p className="text-sm text-white/50">Already have an account?{' '}<Link href="/login" className="text-brand-400 hover:underline">Log in</Link></p>
+          <p className="text-sm text-white/40">Have an account?{' '}
+            <Link href="/login" className="text-violet-400 hover:text-violet-300 hover:underline font-medium transition-colors">Log in</Link>
+          </p>
         </div>
       </nav>
 
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-brand-600/15 rounded-full blur-[120px] pointer-events-none" />
-
       <main className="flex-1 flex items-center justify-center px-4 py-16 relative">
-        <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-12 items-center">
+        <div className="w-full max-w-md">
 
-          {/* Left value props */}
-          <div className="hidden lg:block">
-            <div className="inline-flex items-center gap-2 bg-brand-500/10 border border-brand-500/30 rounded-full px-4 py-1.5 text-sm text-brand-300 mb-6">
-              <span className="w-2 h-2 rounded-full bg-brand-400 animate-pulse" />
-              Free forever plan available
+          {/* Header */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 mb-4 shadow-lg shadow-fuchsia-500/25">
+              <Zap className="w-7 h-7 text-white" fill="white" />
             </div>
-            <h2 className="text-4xl font-extrabold mb-4 leading-tight">
-              Start turning followers
-              <br />
-              <span className="bg-gradient-to-r from-brand-400 via-brand-300 to-accent-400 bg-clip-text text-transparent">into revenue</span>
-            </h2>
-            <p className="text-white/50 mb-8 leading-relaxed">Join creators and businesses using iGrowth to automate DMs, capture leads, and track what actually makes money on Instagram.</p>
-            <ul className="space-y-3">
-              {perks.map(p => (
-                <li key={p} className="flex items-center gap-3 text-sm text-white/70">
-                  <div className="w-5 h-5 rounded-full bg-brand-500/20 border border-brand-500/40 flex items-center justify-center flex-shrink-0">
-                    <Check className="w-3 h-3 text-brand-400" />
-                  </div>
-                  {p}
-                </li>
-              ))}
-            </ul>
+            <h1 className="text-3xl font-extrabold mb-2 tracking-tight">
+              {step === 1 ? 'Create your account' : 'Choose your plan'}
+            </h1>
+            <p className="text-white/40 text-sm">
+              {step === 1 ? 'Start automating Instagram DMs in minutes' : 'You can upgrade or downgrade anytime'}
+            </p>
           </div>
 
-          {/* Right form */}
-          <div>
-            <div className="text-center mb-6 lg:text-left">
-              <h1 className="text-2xl font-extrabold mb-1">Create your account</h1>
-              <p className="text-white/50 text-sm">Free forever. No credit card required.</p>
-            </div>
-
-            <div className="bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl p-8">
-              <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-                <div>
-                  <label htmlFor="name" className="block text-sm font-medium text-white/70 mb-1.5">Full name</label>
-                  <input id="name" type="text" autoComplete="name" value={name} onChange={e => setName(e.target.value)} placeholder="Your name"
-                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/40 transition-all" />
+          {/* Step indicator */}
+          <div className="flex items-center justify-center gap-2 mb-8">
+            {[1, 2].map(s => (
+              <div key={s} className="flex items-center gap-2">
+                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
+                  s < step ? 'bg-violet-500 text-white'
+                  : s === step ? 'bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white shadow-lg shadow-violet-500/30'
+                  : 'bg-white/10 text-white/30'
+                }`}>
+                  {s < step ? <CheckCircle2 className="w-4 h-4" /> : s}
                 </div>
+                {s < 2 && <div className={`w-10 h-px transition-all ${s < step ? 'bg-violet-500' : 'bg-white/15'}`} />}
+              </div>
+            ))}
+          </div>
 
+          {/* Card */}
+          <div className="bg-white/[0.04] border border-white/10 backdrop-blur-sm rounded-2xl p-8 shadow-xl shadow-black/20">
+
+            {/* ── Step 1: Account Info ── */}
+            {step === 1 && (
+              <form onSubmit={handleStep1} className="space-y-5" noValidate>
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-white/70 mb-1.5">Email address</label>
-                  <input id="email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com"
-                    className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/40 transition-all" />
+                  <label className="block text-sm font-medium text-white/60 mb-1.5">Full name</label>
+                  <input type="text" autoComplete="name" value={form.name} onChange={e => update('name', e.target.value)}
+                    placeholder="Your name"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20 transition-all" />
                 </div>
-
                 <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-white/70 mb-1.5">Password</label>
+                  <label className="block text-sm font-medium text-white/60 mb-1.5">Email address</label>
+                  <input type="email" autoComplete="email" value={form.email} onChange={e => update('email', e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/60 mb-1.5">Password</label>
                   <div className="relative">
-                    <input id="password" type={showPass ? 'text' : 'password'} autoComplete="new-password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Min. 8 characters"
-                      className="w-full bg-white/5 border border-white/15 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-white/30 focus:outline-none focus:border-brand-500/60 focus:ring-1 focus:ring-brand-500/40 transition-all" />
-                    <button type="button" onClick={() => setShowPass(!showPass)} aria-label={showPass ? 'Hide password' : 'Show password'}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors">
+                    <input type={showPass ? 'text' : 'password'} autoComplete="new-password" value={form.password} onChange={e => update('password', e.target.value)}
+                      placeholder="Min. 6 characters"
+                      className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-11 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20 transition-all" />
+                    <button type="button" onClick={() => setShowPass(!showPass)}
+                      aria-label={showPass ? 'Hide' : 'Show'}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/35 hover:text-white/60 transition-colors p-1">
                       {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
-                  <div className="flex gap-1 mt-2">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className={`h-1 flex-1 rounded-full transition-all ${
-                        password.length >= i * 2
-                          ? i <= 1 ? 'bg-red-500' : i <= 2 ? 'bg-yellow-500' : i <= 3 ? 'bg-brand-400' : 'bg-green-500'
-                          : 'bg-white/10'
-                      }`} />
-                    ))}
-                  </div>
                 </div>
+                {error && <div className="bg-red-500/10 border border-red-500/25 rounded-xl px-4 py-3 text-sm text-red-400">⚠ {error}</div>}
+                <button type="submit"
+                  className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold py-3.5 rounded-xl text-sm hover:opacity-90 active:scale-[0.99] transition-all shadow-lg shadow-violet-500/20">
+                  Continue <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                </button>
 
-                {error && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3 text-sm text-red-400">{error}</div>
-                )}
-
-                <button type="submit" disabled={loading}
-                  className="group w-full flex items-center justify-center gap-2 bg-gradient-to-r from-brand-500 to-accent-500 text-white font-semibold py-3.5 rounded-xl text-sm hover:opacity-90 transition-all disabled:opacity-60 disabled:cursor-not-allowed">
-                  {loading ? (
-                    <svg className="animate-spin w-4 h-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" />
-                    </svg>
-                  ) : (
-                    <>
-                      Create free account
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                    </>
-                  )}
+                <div className="flex items-center gap-3 my-2">
+                  <div className="flex-1 h-px bg-white/10" />
+                  <span className="text-xs text-white/30">or</span>
+                  <div className="flex-1 h-px bg-white/10" />
+                </div>
+                <button type="button" className="w-full flex items-center justify-center gap-2.5 border border-white/12 text-white/65 hover:bg-white/5 hover:text-white hover:border-white/20 font-medium py-3 rounded-xl text-sm transition-all">
+                  <Instagram className="w-4 h-4" /> Sign up with Instagram
                 </button>
               </form>
+            )}
 
-              <div className="flex items-center gap-3 my-6">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-xs text-white/30">or</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
+            {/* ── Step 2: Plan Selection ── */}
+            {step === 2 && (
+              <form onSubmit={handleStep2} className="space-y-5">
+                <div className="space-y-3">
+                  {PLANS.map(plan => (
+                    <button key={plan.id} type="button" onClick={() => setSelectedPlan(plan.id)}
+                      className={`w-full flex items-center justify-between p-4 rounded-xl border text-left transition-all ${
+                        selectedPlan === plan.id
+                          ? 'bg-violet-500/12 border-violet-500/40 shadow-sm shadow-violet-500/10'
+                          : 'bg-white/4 border-white/10 hover:bg-white/6 hover:border-white/20'
+                      }`}>
+                      <div className="flex items-center gap-3">
+                        <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                          selectedPlan === plan.id ? 'border-violet-400' : 'border-white/25'
+                        }`}>
+                          {selectedPlan === plan.id && <div className="w-2 h-2 rounded-full bg-violet-400" />}
+                        </div>
+                        <div>
+                          <div className="text-sm font-semibold text-white">{plan.label}</div>
+                          <div className="text-xs text-white/40">{plan.desc}</div>
+                        </div>
+                      </div>
+                      <span className={`text-sm font-bold ${
+                        selectedPlan === plan.id ? 'text-violet-400' : 'text-white/50'
+                      }`}>{plan.price}</span>
+                    </button>
+                  ))}
+                </div>
 
-              <button type="button"
-                className="w-full flex items-center justify-center gap-2.5 border border-white/15 text-white/70 hover:bg-white/5 hover:text-white font-medium py-3 rounded-xl text-sm transition-all">
-                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
-                </svg>
-                Continue with Instagram
-              </button>
-            </div>
+                <div>
+                  <label className="block text-sm font-medium text-white/60 mb-1.5">Brand / Business name <span className="text-white/30">(optional)</span></label>
+                  <input type="text" value={form.brand} onChange={e => update('brand', e.target.value)}
+                    placeholder="e.g. Priya Styles Co."
+                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/60 focus:ring-2 focus:ring-violet-500/20 transition-all" />
+                </div>
 
-            <p className="text-center text-xs text-white/30 mt-6">
-              By signing up, you agree to our{' '}
-              <Link href="/terms" className="text-white/50 hover:text-white/70 underline">Terms</Link>{' '}and{' '}
-              <Link href="/privacy" className="text-white/50 hover:text-white/70 underline">Privacy Policy</Link>.
-            </p>
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setStep(1)}
+                    className="flex-1 py-3.5 rounded-xl border border-white/12 text-white/60 text-sm font-medium hover:bg-white/5 hover:text-white transition-all">
+                    Back
+                  </button>
+                  <button type="submit" disabled={loading}
+                    className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold py-3.5 rounded-xl text-sm hover:opacity-90 active:scale-[0.99] transition-all disabled:opacity-50 shadow-lg shadow-violet-500/20">
+                    {loading
+                      ? <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
+                      : <><span>Get started</span><ArrowRight className="w-4 h-4" /></>}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
+
+          <p className="text-center text-xs text-white/25 mt-6">
+            By signing up you agree to our{' '}
+            <Link href="/terms" className="text-white/40 hover:text-white/60 underline">Terms</Link>{' '}and{' '}
+            <Link href="/privacy" className="text-white/40 hover:text-white/60 underline">Privacy Policy</Link>.
+          </p>
         </div>
       </main>
     </div>
