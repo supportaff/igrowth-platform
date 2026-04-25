@@ -4,26 +4,29 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useUser, UserButton } from '@clerk/nextjs'
 import {
-  LayoutDashboard, MessageCircle, Zap, Users,
-  BarChart3, Settings, Bell, Menu, X, Sparkles,
-  TrendingUp, ChevronRight
+  LayoutDashboard, Zap, BarChart3, Settings,
+  Bell, Menu, X, Sparkles, TrendingUp,
+  ChevronRight, Briefcase, Crown
 } from 'lucide-react'
+import UpgradeModal from '@/components/UpgradeModal'
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Overview',      href: '/dashboard' },
-  { icon: MessageCircle,   label: 'Conversations', href: '/dashboard/conversations', badge: '5' },
-  { icon: Zap,             label: 'Automations',   href: '/dashboard/automations' },
-  { icon: Users,           label: 'Contacts',      href: '/dashboard/followers' },
-  { icon: BarChart3,       label: 'Insights',      href: '/dashboard/insights' },
-  { icon: Settings,        label: 'Settings',      href: '/dashboard/settings' },
+  { icon: LayoutDashboard, label: 'Overview',   href: '/dashboard' },
+  { icon: Zap,             label: 'Automations', href: '/dashboard/automations' },
+  { icon: Briefcase,       label: 'Brand Kit',   href: '/dashboard/brands' },
+  { icon: BarChart3,       label: 'Insights',    href: '/dashboard/insights' },
+  { icon: Settings,        label: 'Settings',    href: '/dashboard/settings' },
 ]
+
+const PLAN = { name: 'Free', dms: 0, dmsMax: 1000, contacts: 0, contactsMax: 1000, automations: 0, automationsMax: 5 }
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notifOpen, setNotifOpen]     = useState(false)
+  const [upgradeOpen, setUpgradeOpen] = useState(false)
   const [scrolled, setScrolled]       = useState(false)
-  const pathname  = usePathname()
-  const { user }  = useUser()
+  const pathname = usePathname()
+  const { user } = useUser()
 
   const activeItem = navItems.find(n =>
     n.href === '/dashboard' ? pathname === n.href : pathname.startsWith(n.href)
@@ -32,15 +35,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const el = document.querySelector('.main-scroll')
     if (!el) return
-    const handler = () => setScrolled(el.scrollTop > 8)
-    el.addEventListener('scroll', handler)
-    return () => el.removeEventListener('scroll', handler)
+    const h = () => setScrolled((el as HTMLElement).scrollTop > 8)
+    el.addEventListener('scroll', h)
+    return () => el.removeEventListener('scroll', h)
   }, [])
+
+  const usageBars = [
+    { label: 'DMs',        used: PLAN.dms,        max: PLAN.dmsMax,        unit: 'DMs/mo' },
+    { label: 'Contacts',   used: PLAN.contacts,   max: PLAN.contactsMax,   unit: 'contacts' },
+    { label: 'Automations',used: PLAN.automations,max: PLAN.automationsMax,unit: 'flows' },
+  ]
 
   return (
     <div style={{ background: 'var(--bg)' }} className="min-h-screen text-white flex">
 
-      {/* ── Sidebar ────────────────────────────────────────────── */}
+      {/* ── Sidebar ──────────────────────────────────────────── */}
       <aside
         style={{ background: 'var(--surface-1)', borderRight: '1px solid var(--border)' }}
         className={`fixed inset-y-0 left-0 z-50 w-56 flex flex-col transition-transform duration-200
@@ -56,55 +65,67 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <p className="text-[13px] font-bold text-white leading-tight">Afforal</p>
             <p style={{ color: 'var(--text-muted)', fontSize: '10px' }} className="leading-tight">IG Growth</p>
           </div>
-          <button onClick={() => setSidebarOpen(false)}
-            className="lg:hidden ml-auto" style={{ color: 'var(--text-muted)' }}
-            aria-label="Close">
+          <button onClick={() => setSidebarOpen(false)} className="lg:hidden"
+            style={{ color: 'var(--text-muted)' }} aria-label="Close">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Nav */}
         <nav className="flex-1 px-2 py-3 space-y-0.5 overflow-y-auto">
-          {navItems.map(({ icon: Icon, label, href, badge }) => {
-            const isActive = href === '/dashboard' ? pathname === href : pathname.startsWith(href)
+          {navItems.map(({ icon: Icon, label, href }) => {
+            const active = href === '/dashboard' ? pathname === href : pathname.startsWith(href)
             return (
               <Link key={label} href={href} onClick={() => setSidebarOpen(false)}
-                style={isActive
+                style={active
                   ? { background: 'var(--accent-dim)', color: 'var(--accent)', borderColor: 'rgba(255,255,255,0.12)' }
                   : { color: 'var(--text-secondary)' }
                 }
                 className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all border
-                  ${ isActive ? 'border' : 'border-transparent hover:bg-white/5 hover:text-white' }`}>
+                  ${active ? 'border' : 'border-transparent hover:bg-white/5 hover:text-white'}`}>
                 <Icon className="w-[15px] h-[15px] flex-shrink-0" />
                 <span className="flex-1">{label}</span>
-                {badge && (
-                  <span className="bg-white text-black text-[10px] font-bold rounded-full px-1.5 py-0.5 min-w-[18px] text-center leading-none">
-                    {badge}
-                  </span>
-                )}
-                {isActive && <ChevronRight className="w-3 h-3 opacity-40" />}
+                {active && <ChevronRight className="w-3 h-3 opacity-40" />}
               </Link>
             )
           })}
         </nav>
 
-        {/* Plan badge */}
-        <div className="px-3 pb-3">
-          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)' }}
-            className="rounded-xl p-3 space-y-2">
-            <div className="flex items-center justify-between">
-              <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Free plan</span>
-              <span style={{ background: 'rgba(255,255,255,0.08)', color: 'var(--text-secondary)', fontSize: '10px' }}
-                className="px-2 py-0.5 rounded-full font-medium">0/1K DMs</span>
+        {/* Usage bars */}
+        <div className="px-3 pb-2">
+          <div style={{ background: 'var(--surface-3)', border: '1px solid var(--border)', borderRadius: '10px' }}
+            className="p-3 space-y-2.5">
+            <div className="flex items-center justify-between mb-1">
+              <span style={{ color: 'var(--text-muted)', fontSize: '10px', letterSpacing: '0.06em' }}
+                className="uppercase font-semibold">Usage · Free</span>
             </div>
-            <div style={{ background: 'var(--surface-4)', borderRadius: '99px', height: '3px' }}>
-              <div style={{ width: '0%', height: '3px', background: 'white', borderRadius: '99px' }} />
-            </div>
-            <Link href="/dashboard/settings?tab=billing"
-              style={{ background: 'white', color: 'black' }}
-              className="block w-full text-center text-[11px] font-bold py-1.5 rounded-lg hover:bg-white/90 transition-colors">
+            {usageBars.map(b => {
+              const pct = Math.min(100, Math.round((b.used / b.max) * 100))
+              const warn = pct >= 80
+              return (
+                <div key={b.label}>
+                  <div className="flex items-center justify-between" style={{ marginBottom: '4px' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '10px' }}>{b.label}</span>
+                    <span style={{ color: warn ? 'var(--amber)' : 'var(--text-muted)', fontSize: '10px' }}>
+                      {b.used}/{b.max}
+                    </span>
+                  </div>
+                  <div style={{ background: 'var(--surface-4)', borderRadius: '99px', height: '3px' }}>
+                    <div style={{
+                      width: `${pct}%`, height: '3px', borderRadius: '99px',
+                      background: warn ? 'var(--amber)' : 'rgba(255,255,255,0.7)',
+                      transition: 'width 600ms ease'
+                    }} />
+                  </div>
+                </div>
+              )
+            })}
+            <button onClick={() => setUpgradeOpen(true)}
+              style={{ background: 'white', color: 'black', fontSize: '11px', borderRadius: '8px' }}
+              className="w-full flex items-center justify-center gap-1.5 py-1.5 font-bold hover:bg-white/90 transition-colors mt-1">
+              <Crown className="w-3 h-3" />
               Upgrade to Pro
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -147,20 +168,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-3">
             <button onClick={() => setSidebarOpen(true)}
               className="lg:hidden p-1.5 rounded-lg hover:bg-white/5 transition-colors"
-              style={{ color: 'var(--text-muted)' }}
-              aria-label="Open menu">
+              style={{ color: 'var(--text-muted)' }} aria-label="Open menu">
               <Menu className="w-4 h-4" />
             </button>
             <div>
               <h1 className="text-[13px] font-semibold text-white">{activeItem?.label ?? 'Overview'}</h1>
-              <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-                Afforal IG Growth
-              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Afforal IG Growth</p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
-            {/* Notification bell */}
+            <button onClick={() => setUpgradeOpen(true)}
+              style={{ background: 'white', color: 'black', fontSize: '11px', borderRadius: '8px' }}
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 font-bold hover:bg-white/90 transition-colors">
+              <Crown className="w-3 h-3" />
+              Upgrade
+            </button>
+
+            {/* Notifications */}
             <div className="relative">
               <button onClick={() => setNotifOpen(!notifOpen)}
                 style={{ color: 'var(--text-muted)' }}
@@ -169,20 +194,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 <Bell className="w-4 h-4" />
                 <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-white pulse-dot" />
               </button>
-
               {notifOpen && (
-                <div
-                  style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', zIndex: 50 }}
+                <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', zIndex: 50 }}
                   className="absolute right-0 top-11 w-72 rounded-2xl shadow-2xl shadow-black/60 overflow-hidden">
-                  <div style={{ borderBottom: '1px solid var(--border)' }} className="px-4 py-3 flex items-center justify-between">
+                  <div style={{ borderBottom: '1px solid var(--border)' }}
+                    className="px-4 py-3 flex items-center justify-between">
                     <p className="text-[13px] font-semibold text-white">Notifications</p>
                     <span style={{ background: 'var(--surface-4)', color: 'var(--text-muted)', fontSize: '10px' }}
                       className="px-2 py-0.5 rounded-full">3 new</span>
                   </div>
                   {[
-                    { msg: 'New DM from @priya_styles', time: '2m ago', icon: MessageCircle, color: '#22c55e' },
+                    { msg: 'New DM from @priya_styles', time: '2m ago', icon: Zap, color: '#22c55e' },
                     { msg: 'Automation hit 100 runs', time: '10m ago', icon: Zap, color: '#f59e0b' },
-                    { msg: 'New follower milestone: 5K', time: '1h ago', icon: TrendingUp, color: '#3b82f6' },
+                    { msg: 'New brand collab request', time: '1h ago', icon: Briefcase, color: '#3b82f6' },
                   ].map((n, i) => (
                     <div key={i}
                       style={{ borderBottom: i < 2 ? '1px solid var(--border)' : 'none' }}
@@ -207,10 +231,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </header>
 
-        <main className="main-scroll flex-1 px-4 sm:px-6 py-6 max-w-6xl w-full mx-auto overflow-y-auto">
+        <main className="main-scroll flex-1 px-4 sm:px-6 py-6 max-w-6xl w-full mx-auto">
           {children}
         </main>
       </div>
+
+      {/* Upgrade Modal */}
+      <UpgradeModal open={upgradeOpen} onClose={() => setUpgradeOpen(false)} />
     </div>
   )
 }
