@@ -1,138 +1,112 @@
 'use client'
-import { useState } from 'react'
-import { X, Check, Crown, Zap, Users, RefreshCw, Star, Shield } from 'lucide-react'
+import { X, Check, Zap } from 'lucide-react'
 
-interface Props { open: boolean; onClose: () => void }
-
-const proFeatures = [
-  { icon: Zap,       label: 'Unlimited DMs' },
-  { icon: Users,     label: 'Unlimited Contacts' },
-  { icon: RefreshCw, label: 'Re-trigger automations' },
-  { icon: Star,      label: 'Ask-for-Follow flows' },
-  { icon: Shield,    label: 'Remove Afforal branding' },
-  { icon: Crown,     label: 'Priority support' },
+const plans = [
+  {
+    name: 'Creator',
+    price: '₹499',
+    period: '/month',
+    features: ['Unlimited DMs', 'Unlimited automations', 'Full CRM', '25 brand deals', '90-day insights'],
+    highlight: false,
+  },
+  {
+    name: 'Growth',
+    price: '₹999',
+    period: '/month',
+    features: ['Everything in Creator', 'Unlimited brand deals', 'Re-engagement flows', '180-day insights', 'Deal PDF export', 'Priority support'],
+    highlight: true,
+    badge: 'Best Value',
+  },
+  {
+    name: 'Agency',
+    price: '₹2499',
+    period: '/month',
+    features: ['10 Instagram accounts', '5 team seats', 'Client workspaces', 'Branded exports', 'Dedicated onboarding'],
+    highlight: false,
+  },
 ]
 
-export default function UpgradeModal({ open, onClose }: Props) {
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('annual')
+export default function UpgradeModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   if (!open) return null
-
-  const monthly = 349
-  const annual  = 299
-  const price   = billing === 'annual' ? annual : monthly
-  const saving  = billing === 'annual' ? Math.round((monthly - annual) * 12) : 0
-
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(6px)' }}
-      onClick={e => { if (e.target === e.currentTarget) onClose() }}>
-
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 100,
+      background: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+    }}
+      onClick={onClose}>
       <div style={{
-        background: 'var(--surface-1)', border: '1px solid var(--border)',
-        borderRadius: '20px', maxWidth: '580px', width: '100%',
-        boxShadow: '0 32px 80px rgba(0,0,0,0.8)',
-        animation: 'fadeUp 0.25s cubic-bezier(0.16,1,0.3,1) both',
-      }}>
+        background: '#2c3340', border: '1px solid rgba(238,238,238,0.1)',
+        borderRadius: 24, padding: '32px 28px', maxWidth: 780, width: '100%',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
+      }}
+        onClick={e => e.stopPropagation()}>
 
-        {/* Header */}
-        <div style={{ borderBottom: '1px solid var(--border)' }}
-          className="flex items-start justify-between px-6 pt-6 pb-5">
-          <div className="flex items-center gap-3">
-            <div style={{ background: 'white', borderRadius: '12px' }}
-              className="w-10 h-10 flex items-center justify-center">
-              <Crown className="w-5 h-5 text-black" />
-            </div>
-            <div>
-              <p className="text-white font-bold text-[16px] leading-tight">Upgrade to Pro</p>
-              <p style={{ color: 'var(--text-muted)', fontSize: '12px' }}>Unlock unlimited growth with Afforal IG Growth</p>
-            </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 28 }}>
+          <div>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#EEEEEE', marginBottom: 4 }}>Upgrade your plan</h2>
+            <p style={{ fontSize: 13, color: 'rgba(238,238,238,0.45)' }}>Unlock more power for your creator workflow</p>
           </div>
           <button onClick={onClose}
-            style={{ color: 'var(--text-muted)', background: 'var(--surface-3)', borderRadius: '8px' }}
-            className="p-1.5 hover:text-white transition-colors" aria-label="Close">
-            <X className="w-4 h-4" />
+            style={{ color: 'rgba(238,238,238,0.4)', background: 'transparent', border: 'none',
+              cursor: 'pointer', padding: 4, borderRadius: 8 }}
+            className="hover:text-[#EEEEEE] hover:bg-white/5 transition-colors"
+            aria-label="Close">
+            <X style={{ width: 18, height: 18 }} />
           </button>
         </div>
 
-        <div className="px-6 py-5 flex flex-col sm:flex-row gap-6">
-
-          {/* Left — features */}
-          <div className="flex-1 space-y-2.5">
-            <p style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.07em' }}
-              className="uppercase font-semibold mb-3">What you get</p>
-            {proFeatures.map(f => (
-              <div key={f.label} className="flex items-center gap-2.5">
-                <div style={{ background: 'rgba(255,255,255,0.08)', borderRadius: '6px' }}
-                  className="w-6 h-6 flex items-center justify-center flex-shrink-0">
-                  <f.icon className="w-3.5 h-3.5 text-white" />
-                </div>
-                <span style={{ fontSize: '13px' }} className="text-white">{f.label}</span>
-                <Check className="w-3.5 h-3.5 ml-auto" style={{ color: 'var(--green)' }} />
-              </div>
-            ))}
-          </div>
-
-          {/* Right — billing toggle + CTA */}
-          <div className="sm:w-52 space-y-3">
-            <p style={{ color: 'var(--text-muted)', fontSize: '11px', letterSpacing: '0.07em' }}
-              className="uppercase font-semibold">Billing</p>
-
-            {/* Monthly */}
-            <button onClick={() => setBilling('monthly')}
-              style={{
-                background: billing === 'monthly' ? 'var(--surface-3)' : 'var(--surface-2)',
-                border: `1.5px solid ${billing === 'monthly' ? 'rgba(255,255,255,0.25)' : 'var(--border)'}`,
-                borderRadius: '12px', width: '100%', textAlign: 'left',
-              }}
-              className="p-3 transition-all">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p style={{ fontSize: '13px' }} className="font-semibold text-white">Monthly</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Billed monthly</p>
-                </div>
-                <p className="text-white font-bold text-[16px]">₹{monthly}
-                  <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 400 }}>/mo</span>
-                </p>
-              </div>
-            </button>
-
-            {/* Annual */}
-            <button onClick={() => setBilling('annual')}
-              style={{
-                background: billing === 'annual' ? 'rgba(34,197,94,0.08)' : 'var(--surface-2)',
-                border: `1.5px solid ${billing === 'annual' ? 'rgba(34,197,94,0.4)' : 'var(--border)'}`,
-                borderRadius: '12px', width: '100%', textAlign: 'left', position: 'relative',
-              }}
-              className="p-3 transition-all">
-              {billing === 'annual' && (
-                <div style={{
-                  position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)',
-                  background: 'var(--green)', color: 'black', fontSize: '10px', fontWeight: 700,
-                  padding: '2px 10px', borderRadius: '99px', whiteSpace: 'nowrap',
-                }}>SAVE ₹{saving}/yr</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
+          {plans.map(plan => (
+            <div key={plan.name} style={{
+              position: 'relative',
+              background: plan.highlight ? '#00ADB5' : '#393E46',
+              border: `1px solid ${plan.highlight ? '#00ADB5' : 'rgba(238,238,238,0.1)'}`,
+              borderRadius: 16, padding: '22px 18px',
+              boxShadow: plan.highlight ? '0 0 30px rgba(0,173,181,0.3)' : 'none',
+            }}>
+              {plan.badge && (
+                <span style={{
+                  position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)',
+                  background: '#EEEEEE', color: '#222831', fontSize: 10, fontWeight: 800,
+                  padding: '3px 10px', borderRadius: 99, whiteSpace: 'nowrap',
+                }}>{plan.badge}</span>
               )}
-              <div className="flex items-center justify-between">
-                <div>
-                  <p style={{ fontSize: '13px' }} className="font-semibold text-white">Annual</p>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '11px' }}>Billed yearly</p>
-                </div>
-                <p className="text-white font-bold text-[16px]">₹{annual}
-                  <span style={{ color: 'var(--text-muted)', fontSize: '11px', fontWeight: 400 }}>/mo</span>
-                </p>
+              <p style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.1em',
+                color: plan.highlight ? 'rgba(255,255,255,0.7)' : 'rgba(238,238,238,0.4)',
+                marginBottom: 6, textTransform: 'uppercase' }}>{plan.name}</p>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, marginBottom: 14 }}>
+                <span style={{ fontSize: 26, fontWeight: 800, color: plan.highlight ? '#fff' : '#EEEEEE' }}>{plan.price}</span>
+                <span style={{ fontSize: 12, marginBottom: 3, color: plan.highlight ? 'rgba(255,255,255,0.6)' : 'rgba(238,238,238,0.4)' }}>{plan.period}</span>
               </div>
-            </button>
-
-            {/* CTA */}
-            <button
-              style={{ background: 'white', color: 'black', borderRadius: '12px', fontSize: '14px' }}
-              className="w-full py-3 font-bold hover:bg-white/90 active:scale-95 transition-all">
-              Upgrade Now · ₹{price}/mo
-            </button>
-            <p style={{ color: 'var(--text-muted)', fontSize: '11px', textAlign: 'center' }}>
-              Cancel anytime · Price lock guarantee
-            </p>
-          </div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 18px', display: 'flex', flexDirection: 'column', gap: 7 }}>
+                {plan.features.map(f => (
+                  <li key={f} style={{ display: 'flex', gap: 7, fontSize: 12,
+                    color: plan.highlight ? 'rgba(255,255,255,0.85)' : 'rgba(238,238,238,0.6)',
+                    alignItems: 'flex-start' }}>
+                    <Check style={{ width: 13, height: 13, flexShrink: 0, marginTop: 1,
+                      color: plan.highlight ? '#fff' : '#00ADB5' }} />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+              <button style={{
+                width: '100%', padding: '9px', borderRadius: 10, fontWeight: 700, fontSize: 13,
+                background: plan.highlight ? '#222831' : '#00ADB5',
+                color: plan.highlight ? '#00ADB5' : '#fff',
+                border: 'none', cursor: 'pointer', transition: 'opacity 160ms',
+              }}
+                className="hover:opacity-85">
+                <Zap style={{ width: 12, height: 12, display: 'inline', marginRight: 5 }} fill="currentColor" />
+                Choose {plan.name}
+              </button>
+            </div>
+          ))}
         </div>
+
+        <p style={{ textAlign: 'center', color: 'rgba(238,238,238,0.25)', fontSize: 12, marginTop: 20 }}>
+          7-day free trial · No credit card required · Cancel anytime
+        </p>
       </div>
     </div>
   )

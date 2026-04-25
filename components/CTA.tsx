@@ -3,26 +3,28 @@ import { ArrowRight } from 'lucide-react'
 
 export default function CTA() {
   return (
-    <section className="py-24">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-        <div className="card-glass p-12 glow relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-brand-500/10 to-accent-500/5 pointer-events-none" />
-          <div className="relative">
-            <h2 className="text-4xl sm:text-5xl font-extrabold mb-5">
-              Ready to turn followers into <span className="gradient-text">revenue?</span>
-            </h2>
-            <p className="text-white/60 text-lg mb-10 max-w-xl mx-auto">
-              Join thousands of creators and businesses using iGrowth to automate, capture, and convert &mdash; every single day.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/signup" className="group flex items-center gap-2 bg-gradient-to-r from-brand-500 to-accent-500 text-white font-semibold px-8 py-4 rounded-full text-lg hover:opacity-90 transition-all glow">
-                Start Free Today
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </Link>
-              <p className="text-white/40 text-sm">No credit card required. Free forever plan available.</p>
-            </div>
-          </div>
-        </div>
+    <section style={{ background: '#222831', padding: '80px 24px' }}>
+      <div style={{ maxWidth: 700, margin: '0 auto', textAlign: 'center',
+        background: '#393E46', border: '1px solid rgba(0,173,181,0.25)',
+        borderRadius: 24, padding: '60px 40px',
+        boxShadow: '0 0 60px rgba(0,173,181,0.08)' }}>
+        <h2 style={{ fontSize: 'clamp(1.6rem,4vw,2.4rem)', fontWeight: 800,
+          color: '#EEEEEE', marginBottom: 14, letterSpacing: '-0.5px' }}>
+          Ready to grow on autopilot?
+        </h2>
+        <p style={{ color: 'rgba(238,238,238,0.5)', fontSize: 16, marginBottom: 36, maxWidth: 480, margin: '0 auto 36px' }}>
+          Join 2,400+ creators already using Afforal to automate DMs, close brand deals, and grow faster.
+        </p>
+        <Link href="/signup"
+          style={{ display: 'inline-flex', alignItems: 'center', gap: 8,
+            background: '#00ADB5', color: '#fff', fontWeight: 700, fontSize: 15,
+            padding: '13px 30px', borderRadius: 12, transition: 'background 160ms' }}
+          className="hover:bg-[#009aa2]">
+          Start for free <ArrowRight style={{ width: 16, height: 16 }} />
+        </Link>
+        <p style={{ color: 'rgba(238,238,238,0.25)', fontSize: 12, marginTop: 16 }}>
+          No credit card required. Cancel anytime.
+        </p>
       </div>
     </section>
   )

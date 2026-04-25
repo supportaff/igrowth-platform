@@ -1,73 +1,108 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Menu, X, Zap } from 'lucide-react'
+import { Sparkles, Menu, X } from 'lucide-react'
 
 export default function Navbar() {
-  const [open, setOpen] = useState(false)
-  const links = [
-    { label: 'Features', href: '#features' },
-    { label: 'How It Works', href: '#how-it-works' },
-    { label: 'Pricing', href: '#pricing' },
-  ]
+  const [scrolled, setScrolled] = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+
+  useEffect(() => {
+    const h = () => setScrolled(window.scrollY > 20)
+    window.addEventListener('scroll', h)
+    return () => window.removeEventListener('scroll', h)
+  }, [])
 
   return (
-    <nav className="fixed top-0 w-full z-50 bg-[#0f0f1a]/80 backdrop-blur-md border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center">
-              <Zap className="w-4 h-4 text-white" fill="white" />
-            </div>
-            <span className="text-xl font-bold gradient-text">iGrowth</span>
-          </Link>
+    <header
+      style={{
+        position: 'sticky', top: 0, zIndex: 50,
+        background: scrolled ? 'rgba(34,40,49,0.95)' : 'transparent',
+        borderBottom: scrolled ? '1px solid rgba(238,238,238,0.08)' : '1px solid transparent',
+        backdropFilter: scrolled ? 'blur(16px)' : 'none',
+        transition: 'all 220ms ease',
+      }}
+    >
+      <div style={{ maxWidth: 1200, margin: '0 auto', padding: '0 24px' }}
+        className="flex items-center justify-between h-16">
 
-          {/* Desktop Links */}
-          <div className="hidden md:flex items-center gap-8">
-            {links.map(l => (
-              <a key={l.label} href={l.href}
-                className="text-sm text-white/70 hover:text-white transition-colors">
-                {l.label}
-              </a>
-            ))}
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2.5">
+          <div style={{ background: '#00ADB5', borderRadius: 10, width: 34, height: 34,
+            display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Sparkles style={{ color: '#ffffff', width: 16, height: 16 }} fill="white" />
           </div>
+          <span style={{ fontWeight: 800, fontSize: 17, color: '#EEEEEE', letterSpacing: '-0.3px' }}>
+            Afforal
+          </span>
+        </Link>
 
-          {/* CTA */}
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="text-sm text-white/70 hover:text-white transition-colors">Log in</Link>
-            <Link href="/signup" className="bg-gradient-to-r from-brand-500 to-accent-500 text-white text-sm font-semibold px-5 py-2 rounded-full hover:opacity-90 transition-opacity glow-sm">
-              Start Free
+        {/* Desktop nav */}
+        <nav className="hidden md:flex items-center gap-1">
+          {['Features', 'Pricing', 'Blog'].map(item => (
+            <Link key={item} href={`#${item.toLowerCase()}`}
+              style={{ color: 'rgba(238,238,238,0.65)', fontSize: 14, fontWeight: 500,
+                padding: '6px 14px', borderRadius: 8, transition: 'color 160ms, background 160ms' }}
+              className="hover:text-[#EEEEEE] hover:bg-white/5">
+              {item}
             </Link>
-          </div>
+          ))}
+        </nav>
 
-          {/* Mobile toggle */}
-          <button className="md:hidden text-white/70 hover:text-white" onClick={() => setOpen(!open)} aria-label="Toggle menu">
-            {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+        {/* CTA */}
+        <div className="hidden md:flex items-center gap-3">
+          <Link href="/login"
+            style={{ color: 'rgba(238,238,238,0.7)', fontSize: 14, fontWeight: 500,
+              padding: '7px 16px', borderRadius: 8, transition: 'color 160ms' }}
+            className="hover:text-[#EEEEEE]">
+            Sign in
+          </Link>
+          <Link href="/signup"
+            style={{ background: '#00ADB5', color: '#ffffff', fontSize: 14, fontWeight: 700,
+              padding: '8px 20px', borderRadius: 10, transition: 'background 160ms' }}
+            className="hover:bg-[#009aa2]">
+            Get started free
+          </Link>
         </div>
+
+        {/* Mobile toggle */}
+        <button onClick={() => setMobileOpen(v => !v)}
+          className="md:hidden p-2 rounded-lg hover:bg-white/5 transition-colors"
+          style={{ color: '#EEEEEE' }} aria-label="Toggle menu">
+          {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
       </div>
 
       {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden bg-[#0f0f1a] border-t border-white/10 px-4 py-4 space-y-3">
-          {links.map(l => (
-            <a key={l.label} href={l.href}
-              onClick={() => setOpen(false)}
-              className="block text-white/70 hover:text-white text-sm py-2">
-              {l.label}
-            </a>
+      {mobileOpen && (
+        <div style={{ background: '#393E46', borderTop: '1px solid rgba(238,238,238,0.08)' }}
+          className="md:hidden px-6 pb-5 pt-3 space-y-1">
+          {['Features', 'Pricing', 'Blog'].map(item => (
+            <Link key={item} href={`#${item.toLowerCase()}`}
+              onClick={() => setMobileOpen(false)}
+              style={{ display: 'block', color: 'rgba(238,238,238,0.75)', fontSize: 15,
+                padding: '10px 12px', borderRadius: 8 }}
+              className="hover:bg-white/5 hover:text-[#EEEEEE] transition-colors">
+              {item}
+            </Link>
           ))}
-          <Link href="/login" onClick={() => setOpen(false)}
-            className="block text-white/70 hover:text-white text-sm py-2">
-            Log in
-          </Link>
-          <Link href="/signup" onClick={() => setOpen(false)}
-            className="block bg-gradient-to-r from-brand-500 to-accent-500 text-white text-sm font-semibold px-5 py-2.5 rounded-full text-center mt-2">
-            Start Free
-          </Link>
+          <div style={{ borderTop: '1px solid rgba(238,238,238,0.08)', paddingTop: 12, marginTop: 8 }}
+            className="flex flex-col gap-2">
+            <Link href="/login"
+              style={{ color: 'rgba(238,238,238,0.75)', fontSize: 14, fontWeight: 500,
+                padding: '10px 12px', borderRadius: 8, textAlign: 'center' }}
+              className="hover:bg-white/5 hover:text-[#EEEEEE] transition-colors">
+              Sign in
+            </Link>
+            <Link href="/signup"
+              style={{ background: '#00ADB5', color: '#fff', fontSize: 14, fontWeight: 700,
+                padding: '11px', borderRadius: 10, textAlign: 'center', display: 'block' }}
+              className="hover:bg-[#009aa2] transition-colors">
+              Get started free
+            </Link>
+          </div>
         </div>
       )}
-    </nav>
+    </header>
   )
 }

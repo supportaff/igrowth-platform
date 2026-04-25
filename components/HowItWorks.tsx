@@ -1,52 +1,33 @@
 const steps = [
-  {
-    num: '01',
-    title: 'Connect Instagram',
-    desc: 'Link your Instagram Business Account in one click. Token health is monitored 24/7 with instant reconnect alerts.',
-  },
-  {
-    num: '02',
-    title: 'Build a Conversation Flow',
-    desc: 'Use the visual step builder: set a trigger (comment, DM keyword, story reply), then chain messages, questions, tags, and links.',
-  },
-  {
-    num: '03',
-    title: 'Capture Leads Automatically',
-    desc: 'Every reply is saved to your Follower CRM with source, tags, and conversation history — ready to segment and re-engage.',
-  },
-  {
-    num: '04',
-    title: 'Track What Makes Money',
-    desc: 'Content Insights show which posts drove the most DMs, leads, and purchases. Focus on what actually converts.',
-  },
+  { num: '01', title: 'Connect Instagram', desc: 'Link your account via the official Meta API. Setup takes under 2 minutes — no passwords, no risk.' },
+  { num: '02', title: 'Set up automations', desc: 'Choose triggers: keywords, story replies, comment reactions. Afforal handles the rest 24/7.' },
+  { num: '03', title: 'Manage brand deals', desc: 'Add incoming brand leads, move them through your pipeline, and never miss a follow-up again.' },
+  { num: '04', title: 'Watch your growth', desc: 'Track DM conversions, engagement trends, and top-performing content from your insights dashboard.' },
 ]
 
 export default function HowItWorks() {
   return (
-    <section id="how-it-works" className="py-24 bg-white/[0.02]">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
-            Up and running in <span className="gradient-text">under 5 minutes</span>
+    <section id="how-it-works" style={{ background: '#2c3340', padding: '80px 24px' }}>
+      <div style={{ maxWidth: 960, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <h2 style={{ fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 800,
+            color: '#EEEEEE', letterSpacing: '-0.5px', marginBottom: 12 }}>
+            Up and running in minutes
           </h2>
-          <p className="text-white/50 text-lg max-w-xl mx-auto">
-            No technical setup. No learning curve. Just connect and convert.
-          </p>
+          <p style={{ color: 'rgba(238,238,238,0.45)', fontSize: 16 }}>No technical knowledge needed.</p>
         </div>
-        <div className="relative">
-          {/* Connector line */}
-          <div className="hidden lg:block absolute top-10 left-[12.5%] right-[12.5%] h-px bg-gradient-to-r from-brand-500/0 via-brand-500/40 to-brand-500/0" />
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {steps.map(({ num, title, desc }) => (
-              <div key={num} className="text-center">
-                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-brand-500/20 to-accent-500/20 border border-brand-500/30 flex items-center justify-center mx-auto mb-5 glow-sm">
-                  <span className="text-2xl font-extrabold gradient-text">{num}</span>
-                </div>
-                <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-                <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
-              </div>
-            ))}
-          </div>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(210px,1fr))', gap: 24 }}>
+          {steps.map(s => (
+            <div key={s.num}
+              style={{ background: '#393E46', border: '1px solid rgba(238,238,238,0.08)',
+                borderRadius: 16, padding: '28px 22px' }}>
+              <div style={{ fontSize: 28, fontWeight: 800, color: '#00ADB5',
+                marginBottom: 14, letterSpacing: '-1px' }}>{s.num}</div>
+              <h3 style={{ color: '#EEEEEE', fontWeight: 700, fontSize: 15, marginBottom: 8 }}>{s.title}</h3>
+              <p style={{ color: 'rgba(238,238,238,0.45)', fontSize: 13, lineHeight: 1.65 }}>{s.desc}</p>
+            </div>
+          ))}
         </div>
       </div>
     </section>

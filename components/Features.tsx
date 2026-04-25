@@ -1,75 +1,72 @@
-import { MessageSquare, Users, BarChart3, Link2, ShieldCheck, RefreshCw } from 'lucide-react'
+import { MessageCircle, Briefcase, Calendar, BarChart3, Zap, Shield } from 'lucide-react'
 
 const features = [
   {
-    icon: MessageSquare,
-    title: 'Conversation Flows',
-    desc: 'Build multi-step DM journeys — not just one-shot replies. Ask questions, save answers, assign tags, and deliver links in a single automated flow.',
-    tag: 'Core',
+    icon: MessageCircle,
+    title: 'Instagram DM Inbox',
+    desc: 'Manage all your Instagram conversations in one place. Reply, tag, and track every DM without leaving the dashboard.',
+    color: '#00ADB5',
   },
   {
-    icon: Users,
-    title: 'Follower CRM',
-    desc: 'Every follower becomes a contact. See DM history, tags, source post, and last interaction. Segment by intent and re-engage with precision.',
-    tag: 'Differentiator',
+    icon: Briefcase,
+    title: 'Brand Deal CRM',
+    desc: 'Track every collab from first contact to payment. Manage leads, negotiations, deliverables, and follow-ups.',
+    color: '#00ADB5',
+  },
+  {
+    icon: Calendar,
+    title: 'Campaign Planner',
+    desc: 'Plan shoots, draft deadlines, posting dates, and payment follow-ups on a drag-and-drop calendar.',
+    color: '#00ADB5',
+  },
+  {
+    icon: Zap,
+    title: 'DM Automations',
+    desc: 'Auto-reply to keywords, story mentions, and comments. Send personalised follow-ups on autopilot.',
+    color: '#00ADB5',
   },
   {
     icon: BarChart3,
-    title: 'Content → Conversion Analytics',
-    desc: 'Know exactly which Reel, Post, or Story generated leads and revenue. Track the full path from engagement to purchase.',
-    tag: 'New',
+    title: 'Content Insights',
+    desc: 'See which posts drive the most DMs, profile visits, and follower growth — with actionable breakdowns.',
+    color: '#00ADB5',
   },
   {
-    icon: Link2,
-    title: 'Smart Link Delivery',
-    desc: 'Auto-tracked links per automation. See who clicked, from which content, with optional expiry and usage limits.',
-    tag: 'New',
-  },
-  {
-    icon: ShieldCheck,
-    title: 'Safe Automation Rules',
-    desc: 'Built-in delay controls, daily throttling, duplicate prevention, and manual approval mode. Automation that respects Instagram limits.',
-    tag: 'Built-in',
-  },
-  {
-    icon: RefreshCw,
-    title: 'Re-engagement Campaigns',
-    desc: 'Segment people who asked for price but didn\'t buy. Send targeted follow-ups manually or via rules — no AI required.',
-    tag: 'Growth',
+    icon: Shield,
+    title: 'Safe & Compliant',
+    desc: 'Built on the official Instagram API. No password sharing, no bots, no risk to your account.',
+    color: '#00ADB5',
   },
 ]
 
-const tagColor: Record<string, string> = {
-  Core:          'bg-brand-500/15 text-brand-300 border-brand-500/30',
-  Differentiator:'bg-green-500/15 text-green-300 border-green-500/30',
-  New:           'bg-accent-500/15 text-accent-300 border-accent-500/30',
-  'Built-in':    'bg-blue-500/15 text-blue-300 border-blue-500/30',
-  Growth:        'bg-yellow-500/15 text-yellow-300 border-yellow-500/30',
-}
-
 export default function Features() {
   return (
-    <section id="features" className="py-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl sm:text-5xl font-extrabold mb-4">
-            Everything you need to <span className="gradient-text">monetize Instagram</span>
+    <section id="features" style={{ background: '#222831', padding: '80px 24px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 56 }}>
+          <h2 style={{ fontSize: 'clamp(1.8rem,4vw,2.8rem)', fontWeight: 800,
+            color: '#EEEEEE', letterSpacing: '-0.5px', marginBottom: 12 }}>
+            Everything a creator needs
           </h2>
-          <p className="text-white/50 text-lg max-w-xl mx-auto">
-            Six focused modules. No bloat. Each one built around creator revenue.
+          <p style={{ color: 'rgba(238,238,238,0.45)', fontSize: 16, maxWidth: 480, margin: '0 auto' }}>
+            One platform to manage your audience, deals, and growth.
           </p>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {features.map(({ icon: Icon, title, desc, tag }) => (
-            <div key={title} className="card-glass p-6 hover:bg-white/8 transition-colors group">
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-11 h-11 rounded-xl bg-brand-500/15 border border-brand-500/25 flex items-center justify-center group-hover:bg-brand-500/25 transition-colors">
-                  <Icon className="w-5 h-5 text-brand-400" />
-                </div>
-                <span className={`text-xs font-semibold px-2.5 py-1 rounded-full border ${tagColor[tag]}`}>{tag}</span>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px,1fr))', gap: 20 }}>
+          {features.map(({ icon: Icon, title, desc }) => (
+            <div key={title}
+              style={{ background: '#393E46', border: '1px solid rgba(238,238,238,0.08)',
+                borderRadius: 16, padding: '28px 24px',
+                transition: 'border-color 200ms, transform 200ms' }}
+              className="hover:border-[#00ADB5]/40 hover:-translate-y-0.5">
+              <div style={{ width: 44, height: 44, borderRadius: 12, marginBottom: 18,
+                background: 'rgba(0,173,181,0.12)', display: 'flex',
+                alignItems: 'center', justifyContent: 'center' }}>
+                <Icon style={{ width: 20, height: 20, color: '#00ADB5' }} />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">{title}</h3>
-              <p className="text-white/50 text-sm leading-relaxed">{desc}</p>
+              <h3 style={{ color: '#EEEEEE', fontWeight: 700, fontSize: 16, marginBottom: 8 }}>{title}</h3>
+              <p style={{ color: 'rgba(238,238,238,0.5)', fontSize: 14, lineHeight: 1.6 }}>{desc}</p>
             </div>
           ))}
         </div>
