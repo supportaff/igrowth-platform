@@ -1,41 +1,33 @@
 'use client'
-import { useSearchParams } from 'next/navigation'
-import Link from 'next/link'
-import { XCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { XCircle, RefreshCw } from 'lucide-react'
 
-export default function PaymentFailed() {
-  const params = useSearchParams()
-  const reason = params.get('reason') ?? 'Your payment could not be processed.'
-
+export default function PaymentFailedPage() {
+  const router = useRouter()
   return (
-    <div style={{
-      minHeight: '100vh', background: '#000',
-      display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center',
-      padding: '40px 24px', textAlign: 'center',
-    }}>
-      <XCircle style={{ width: 56, height: 56, color: '#dc2626', marginBottom: 20 }} />
-      <h1 style={{ fontSize: 28, fontWeight: 800, color: '#fff', marginBottom: 10 }}>
-        Payment Failed
-      </h1>
-      <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16, maxWidth: 400, marginBottom: 32 }}>
-        {decodeURIComponent(reason)}
-      </p>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <Link
-          href="/#pricing"
-          style={{
-            background: '#fff', color: '#000',
-            borderRadius: 10, padding: '12px 24px',
-            fontWeight: 700, fontSize: 14, textDecoration: 'none',
-          }}>Try Again</Link>
-        <Link
-          href="/dashboard"
-          style={{
-            border: '1px solid rgba(255,255,255,0.2)', color: 'rgba(255,255,255,0.6)',
-            borderRadius: 10, padding: '12px 24px',
-            fontWeight: 700, fontSize: 14, textDecoration: 'none',
-          }}>Back to Dashboard</Link>
+    <div style={{ minHeight: '100vh', background: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ maxWidth: 420, width: '100%', textAlign: 'center' }}>
+        <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'rgba(239,68,68,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px' }}>
+          <XCircle style={{ width: 38, height: 38, color: '#f87171' }} />
+        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#fff', letterSpacing: '-1px', marginBottom: 10 }}>Payment failed</h1>
+        <p style={{ color: 'rgba(255,255,255,0.55)', fontSize: 15, lineHeight: 1.7, marginBottom: 32 }}>
+          Your payment could not be processed.<br />
+          No amount was charged. Please try again.
+        </p>
+        <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: '#fff', color: '#000', border: 'none', borderRadius: 12, padding: '13px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}>
+            <RefreshCw style={{ width: 14, height: 14 }} /> Try again
+          </button>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'transparent', color: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '13px 24px', fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>
+            Back to dashboard
+          </button>
+        </div>
+        <p style={{ marginTop: 24, fontSize: 12, color: 'rgba(255,255,255,0.25)' }}>Need help? Email <a href="mailto:support@afforal.com" style={{ color: 'rgba(255,255,255,0.4)' }}>support@afforal.com</a></p>
       </div>
     </div>
   )
