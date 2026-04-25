@@ -8,13 +8,13 @@ export default clerkMiddleware((auth, req) => {
   if (isProtectedRoute(req)) {
     auth().protect()
   }
+  // Public routes: /, /login, /signup, /privacy, /terms, /api/instagram/callback
+  // — no protection needed, fall through
 })
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and static files
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 }

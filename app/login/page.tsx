@@ -1,54 +1,48 @@
 'use client'
 import { SignIn } from '@clerk/nextjs'
-import { Zap } from 'lucide-react'
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen bg-[#0a0a14] flex items-center justify-center p-4">
-      {/* Background glow */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-violet-600/10 rounded-full blur-[120px]" />
-        <div className="absolute bottom-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[300px] bg-fuchsia-600/8 rounded-full blur-[100px]" />
-      </div>
+    <main style={{
+      minHeight: '100vh',
+      background: '#0a0a0a',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      fontFamily: 'Inter, system-ui, sans-serif',
+      padding: '24px',
+    }}>
+      {/* Back to home */}
+      <a href="/" style={{
+        position: 'absolute',
+        top: '24px',
+        left: '32px',
+        color: 'rgba(255,255,255,0.5)',
+        textDecoration: 'none',
+        fontSize: '14px',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+      }}>← Back to home</a>
 
-      <div className="relative w-full max-w-md space-y-6">
-        {/* Logo */}
-        <div className="flex flex-col items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-fuchsia-500 flex items-center justify-center shadow-lg shadow-violet-500/30">
-            <Zap className="w-6 h-6 text-white" fill="white" />
-          </div>
-          <div className="text-center">
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-violet-400 to-fuchsia-400 bg-clip-text text-transparent">iGrowth</h1>
-            <p className="text-sm text-white/40 mt-1">Instagram DM Automation Platform</p>
-          </div>
+      <div style={{ marginBottom: '32px', textAlign: 'center' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', justifyContent: 'center', marginBottom: '8px' }}>
+          <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+            <rect width="32" height="32" rx="8" fill="#E1306C"/>
+            <circle cx="16" cy="16" r="6" stroke="white" strokeWidth="2.5" fill="none"/>
+            <circle cx="22.5" cy="9.5" r="1.5" fill="white"/>
+          </svg>
+          <span style={{ fontWeight: 700, fontSize: '22px', color: '#fff', letterSpacing: '-0.5px' }}>iGrowth</span>
         </div>
-
-        {/* Clerk SignIn — Google enabled in Clerk dashboard */}
-        <SignIn
-          appearance={{
-            elements: {
-              rootBox: 'w-full',
-              card: 'bg-[#0f0e1c] border border-white/10 rounded-2xl shadow-2xl shadow-black/50 p-6',
-              headerTitle: 'text-white text-lg font-semibold',
-              headerSubtitle: 'text-white/40 text-sm',
-              socialButtonsBlockButton: 'bg-white/5 border border-white/10 text-white hover:bg-white/10 transition-colors rounded-xl',
-              socialButtonsBlockButtonText: 'text-white text-sm font-medium',
-              dividerLine: 'bg-white/10',
-              dividerText: 'text-white/30 text-xs',
-              formFieldLabel: 'text-white/50 text-xs font-medium',
-              formFieldInput: 'bg-white/5 border border-white/10 text-white rounded-xl px-4 py-3 text-sm focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/20 outline-none transition-all',
-              formButtonPrimary: 'bg-gradient-to-r from-violet-500 to-fuchsia-500 text-white font-semibold rounded-xl py-3 hover:opacity-90 transition-all shadow-md shadow-violet-500/20',
-              footerActionLink: 'text-violet-400 hover:text-violet-300',
-              identityPreviewText: 'text-white/70',
-              identityPreviewEditButton: 'text-violet-400',
-              alertText: 'text-red-400 text-xs',
-              formResendCodeLink: 'text-violet-400',
-            },
-          }}
-          redirectUrl="/dashboard"
-          signUpUrl="/signup"
-        />
+        <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '14px' }}>Sign in to your account</p>
       </div>
-    </div>
+
+      <SignIn
+        routing="hash"
+        afterSignInUrl="/dashboard"
+        signUpUrl="/signup"
+      />
+    </main>
   )
 }
