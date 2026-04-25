@@ -5,7 +5,7 @@ import { useUser } from '@clerk/nextjs'
 import {
   Zap, BarChart3, Instagram, ArrowRight, Heart, MessageSquare,
   ExternalLink, RefreshCw, Loader2, AlertTriangle, CheckCircle2,
-  Video, Image, TrendingUp, Users, Activity, Sparkles, Briefcase, Crown
+  Video, Image, Activity, Briefcase, Crown, Users
 } from 'lucide-react'
 import UpgradeModal from '@/components/UpgradeModal'
 
@@ -23,18 +23,25 @@ interface IGData {
 const PLAN = { dms: 0, dmsMax: 1000, contacts: 0, contactsMax: 1000, automations: 0, automationsMax: 5 }
 
 const quickActions = [
-  { icon: Zap,       label: 'Automations', desc: 'Build keyword flows',      href: '/dashboard/automations',  stat: '0 active' },
-  { icon: Briefcase, label: 'Brand Kit',   desc: 'Manage collabs & deals',   href: '/dashboard/brands',       stat: 'Track deals' },
-  { icon: BarChart3, label: 'Insights',    desc: 'Content performance',       href: '/dashboard/insights',     stat: 'View analytics' },
-  { icon: Users,     label: 'Contacts',    desc: 'Manage your audience',      href: '/dashboard/followers',    stat: '0 contacts' },
+  { icon: Zap,       label: 'Automations', desc: 'Build keyword flows',    href: '/dashboard/automations', color: 'var(--box-purple-bg)', border: 'var(--box-purple-border)', iconColor: 'var(--box-purple-text)' },
+  { icon: Briefcase, label: 'Brand Kit',   desc: 'Manage collabs & deals', href: '/dashboard/brands',       color: 'var(--box-blue-bg)',   border: 'var(--box-blue-border)',   iconColor: 'var(--box-blue-text)' },
+  { icon: BarChart3, label: 'Insights',    desc: 'Content performance',    href: '/dashboard/insights',     color: 'var(--box-green-bg)',  border: 'var(--box-green-border)',  iconColor: 'var(--box-green-text)' },
+  { icon: Users,     label: 'Contacts',    desc: 'Manage your audience',   href: '/dashboard/followers',    color: 'var(--box-amber-bg)',  border: 'var(--box-amber-border)',  iconColor: 'var(--box-amber-text)' },
+]
+
+const kpiColors = [
+  { bg: 'var(--box-purple-bg)', border: 'var(--box-purple-border)', icon: 'var(--box-purple-text)' },
+  { bg: 'var(--box-blue-bg)',   border: 'var(--box-blue-border)',   icon: 'var(--box-blue-text)' },
+  { bg: 'var(--box-green-bg)',  border: 'var(--box-green-border)',  icon: 'var(--box-green-text)' },
+  { bg: 'var(--box-amber-bg)',  border: 'var(--box-amber-border)',  icon: 'var(--box-amber-text)' },
 ]
 
 export default function DashboardPage() {
   const { user } = useUser()
-  const [ig, setIg]               = useState<IGData>({ connected: false })
-  const [igLoading, setIgLoading] = useState(true)
-  const [refreshing, setRefreshing] = useState(false)
-  const [retryCount, setRetryCount] = useState(0)
+  const [ig, setIg]                   = useState<IGData>({ connected: false })
+  const [igLoading, setIgLoading]     = useState(true)
+  const [refreshing, setRefreshing]   = useState(false)
+  const [retryCount, setRetryCount]   = useState(0)
   const [upgradeOpen, setUpgradeOpen] = useState(false)
 
   const loadIG = useCallback(async (showSpinner = false) => {
@@ -82,12 +89,14 @@ export default function DashboardPage() {
   ]
 
   const usageBars = [
-    { label:'DMs sent',    used:PLAN.dms,        max:PLAN.dmsMax,        color:'rgba(255,255,255,0.7)' },
-    { label:'Contacts',    used:PLAN.contacts,   max:PLAN.contactsMax,   color:'rgba(255,255,255,0.7)' },
-    { label:'Automations', used:PLAN.automations,max:PLAN.automationsMax,color:'rgba(255,255,255,0.7)' },
+    { label:'DMs sent',    used:PLAN.dms,        max:PLAN.dmsMax,        color:'#6d28d9' },
+    { label:'Contacts',    used:PLAN.contacts,   max:PLAN.contactsMax,   color:'#2563eb' },
+    { label:'Automations', used:PLAN.automations,max:PLAN.automationsMax,color:'#059669' },
   ]
 
   const firstName = user?.firstName ?? user?.emailAddresses?.[0]?.emailAddress?.split('@')[0] ?? 'there'
+  const hour = new Date().getHours()
+  const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
 
   return (
     <div className="space-y-6">
@@ -95,9 +104,9 @@ export default function DashboardPage() {
       {/* Greeting */}
       <div className="fade-up flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <h1 style={{ fontSize:'22px', fontWeight:700, letterSpacing:'-0.4px' }} className="text-white">
-            {new Date().getHours()<12?'Good morning':'new Date().getHours()<17?'Good afternoon':'Good evening'},{' '}
-            <span style={{ color:'var(--text-secondary)' }}>{firstName}</span>
+          <h1 style={{ fontSize:'22px', fontWeight:700, letterSpacing:'-0.4px', color:'#0a0a0a' }}>
+            {greeting},{' '}
+            <span style={{ color:'var(--text-secondary)' }}>{firstName}</span> 👋
           </h1>
           <p style={{ color:'var(--text-muted)', fontSize:'13px' }} className="mt-1">
             Here&apos;s what&apos;s happening with your Instagram growth today.
@@ -105,87 +114,87 @@ export default function DashboardPage() {
         </div>
         <div className="flex items-center gap-2">
           <button onClick={() => setUpgradeOpen(true)}
-            style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg hover:text-white hover:border-white/20 transition-all">
+            style={{ background:'#0a0a0a', color:'#fff', fontSize:'12px', border:'none', borderRadius:'8px' }}
+            className="flex items-center gap-1.5 px-3 py-2 font-semibold hover:bg-black/80 transition-all">
             <Crown className="w-3.5 h-3.5" /> Upgrade
           </button>
           <button onClick={() => loadIG(true)} disabled={refreshing}
             style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:text-white hover:border-white/20 disabled:opacity-40 transition-all">
+            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:text-black hover:border-black/20 disabled:opacity-40 transition-all">
             <RefreshCw className={`w-3.5 h-3.5 ${refreshing?'animate-spin':''}`} />
             Refresh
           </button>
         </div>
       </div>
 
-      {/* IG banner */}
+      {/* IG connection banner */}
       {igLoading ? (
         <div style={{ background:'var(--surface-1)', border:'1px solid var(--border)' }}
           className="fade-up rounded-xl p-4 flex items-center gap-3">
           <Loader2 style={{ color:'var(--text-muted)' }} className="w-4 h-4 animate-spin" />
-          <span style={{ color:'var(--text-muted)', fontSize:'13px' }}>Loading your Instagram data…</span>
+          <span style={{ color:'var(--text-muted)', fontSize:'13px' }}>Loading Instagram data…</span>
         </div>
       ) : !ig.connected ? (
-        <div style={{ background:'var(--surface-1)', border:'1px solid rgba(245,158,11,0.25)' }}
+        <div style={{ background:'#fffbeb', border:'1px solid #fde68a' }}
           className="fade-up rounded-xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div style={{ background:'rgba(245,158,11,0.1)', borderRadius:'10px' }}
+            <div style={{ background:'#fef3c7', borderRadius:'10px' }}
               className="w-9 h-9 flex items-center justify-center flex-shrink-0">
-              <Instagram style={{ color:'#f59e0b' }} className="w-4 h-4" />
+              <Instagram style={{ color:'#d97706' }} className="w-4 h-4" />
             </div>
             <div>
-              <p style={{ fontSize:'13px' }} className="font-semibold text-white">Connect your Instagram account</p>
-              <p style={{ color:'var(--text-muted)', fontSize:'12px' }}>Link your business account to unlock all features.</p>
+              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Connect your Instagram account</p>
+              <p style={{ color:'#92400e', fontSize:'12px' }}>Link your business account to unlock all features.</p>
             </div>
           </div>
           <Link href="/dashboard/settings?tab=instagram"
-            style={{ background:'rgba(245,158,11,0.12)', border:'1px solid rgba(245,158,11,0.3)', color:'#fbbf24', fontSize:'12px' }}
-            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-lg font-semibold hover:bg-amber-500/20 transition-colors whitespace-nowrap">
+            style={{ background:'#d97706', color:'#fff', fontSize:'12px', borderRadius:'8px', border:'none' }}
+            className="flex-shrink-0 flex items-center gap-1.5 px-4 py-2 font-semibold hover:bg-amber-600 transition-colors whitespace-nowrap">
             Connect now <ArrowRight className="w-3.5 h-3.5" />
           </Link>
         </div>
       ) : ig.error ? (
-        <div style={{ background:'var(--surface-1)', border:'1px solid rgba(239,68,68,0.2)' }}
+        <div style={{ background:'#fef2f2', border:'1px solid #fecaca' }}
           className="fade-up rounded-xl p-4 flex items-start justify-between gap-4">
           <div className="flex items-start gap-3">
-            <AlertTriangle style={{ color:'#f59e0b' }} className="w-4 h-4 mt-0.5 flex-shrink-0" />
+            <AlertTriangle style={{ color:'#dc2626' }} className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <div>
-              <p style={{ fontSize:'13px' }} className="font-semibold text-white">Instagram temporarily unavailable</p>
-              <p style={{ color:'var(--text-muted)', fontSize:'12px' }}>{ig.is_transient?'Auto-retrying…':'Try again in a moment.'}</p>
+              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Instagram temporarily unavailable</p>
+              <p style={{ color:'#991b1b', fontSize:'12px' }}>{ig.is_transient?'Auto-retrying…':'Try again in a moment.'}</p>
             </div>
           </div>
           <button onClick={()=>{setRetryCount(0);loadIG(true)}} disabled={refreshing}
-            style={{ background:'var(--surface-3)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
-            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-white disabled:opacity-40 transition-all">
+            style={{ background:'var(--surface-2)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'12px' }}
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:text-black disabled:opacity-40 transition-all">
             <RefreshCw className={`w-3 h-3 ${refreshing?'animate-spin':''}`} /> Retry
           </button>
         </div>
       ) : (
-        <div style={{ background:'var(--surface-1)', border:'1px solid var(--border)' }}
+        <div style={{ background:'#f0fdf4', border:'1px solid #bbf7d0' }}
           className="fade-up rounded-xl p-4">
           <div className="flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3">
               {ig.profilePic ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={ig.profilePic} alt={ig.handle} loading="lazy" width={40} height={40}
-                  className="w-10 h-10 rounded-full" style={{ border:'1.5px solid var(--border)' }} />
+                  className="w-10 h-10 rounded-full" style={{ border:'2px solid #bbf7d0' }} />
               ) : (
-                <div style={{ background:'var(--surface-3)', border:'1px solid var(--border)' }}
+                <div style={{ background:'#dcfce7', border:'1px solid #bbf7d0' }}
                   className="w-10 h-10 rounded-full flex items-center justify-center">
-                  <Instagram className="w-4 h-4" style={{ color:'var(--text-muted)' }} />
+                  <Instagram className="w-4 h-4" style={{ color:'#15803d' }} />
                 </div>
               )}
               <div>
                 <div className="flex items-center gap-1.5">
-                  <p style={{ fontSize:'14px' }} className="font-bold text-white">@{ig.handle}</p>
-                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color:'var(--green)' }} />
+                  <p style={{ fontSize:'14px', color:'#0a0a0a' }} className="font-bold">@{ig.handle}</p>
+                  <CheckCircle2 className="w-3.5 h-3.5" style={{ color:'#16a34a' }} />
                 </div>
-                <p style={{ color:'var(--text-muted)', fontSize:'12px' }}>{ig.bio||'Instagram Business Account'}</p>
+                <p style={{ color:'#166534', fontSize:'12px' }}>{ig.bio||'Instagram Business Account'}</p>
               </div>
             </div>
-            <span style={{ background:'rgba(34,197,94,0.1)', color:'var(--green)', border:'1px solid rgba(34,197,94,0.2)', fontSize:'11px' }}
+            <span style={{ background:'#dcfce7', color:'#15803d', border:'1px solid #bbf7d0', fontSize:'11px' }}
               className="flex items-center gap-1 px-2.5 py-1 rounded-full font-medium">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot" /> Connected
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 pulse-dot" /> Connected
             </span>
           </div>
         </div>
@@ -193,20 +202,19 @@ export default function DashboardPage() {
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        {kpis.map((k,i) => (
+        {kpis.map((k, i) => (
           <div key={k.label}
-            style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px', transition:'all 160ms ease' }}
-            className={`fade-up fade-up-${i+1} p-4 space-y-3 hover:border-white/20 hover:bg-[#161616] hover:-translate-y-px`}>
+            style={{ background: kpiColors[i].bg, border: `1px solid ${kpiColors[i].border}`, borderRadius:'12px', transition:'all 160ms ease' }}
+            className={`fade-up fade-up-${i+1} p-4 space-y-3 hover:-translate-y-px`}>
             <div className="flex items-center justify-between">
               <span style={{ color:'var(--text-muted)', fontSize:'12px' }}>{k.label}</span>
-              <div style={{ background:'var(--surface-3)', borderRadius:'8px' }}
+              <div style={{ background:'rgba(0,0,0,0.06)', borderRadius:'8px' }}
                 className="w-7 h-7 flex items-center justify-center">
-                <k.icon style={{ color:'var(--text-muted)' }} className="w-3.5 h-3.5" />
+                <k.icon style={{ color: kpiColors[i].icon }} className="w-3.5 h-3.5" />
               </div>
             </div>
             <div>
-              <p style={{ fontSize:'26px', fontWeight:700, fontVariantNumeric:'tabular-nums', letterSpacing:'-0.5px' }}
-                className="text-white">
+              <p style={{ fontSize:'26px', fontWeight:700, fontVariantNumeric:'tabular-nums', letterSpacing:'-0.5px', color:'#0a0a0a' }}>
                 {igLoading ? <span className="skeleton" style={{ width:60, height:28, display:'inline-block' }} /> : k.value}
               </p>
               <p style={{ color:'var(--text-muted)', fontSize:'11px' }} className="mt-0.5">{k.sub}</p>
@@ -222,18 +230,16 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {quickActions.map(item => (
             <Link key={item.label} href={item.href}
-              style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px' }}
-              className="group block p-4 hover:border-white/20 hover:bg-[#161616] transition-all">
-              <div style={{ background:'var(--surface-3)', borderRadius:'10px' }}
-                className="w-9 h-9 flex items-center justify-center mb-3 group-hover:bg-white/10 transition-colors">
-                <item.icon className="w-4 h-4 text-white" />
+              style={{ background: item.color, border: `1px solid ${item.border}`, borderRadius:'12px' }}
+              className="group block p-4 hover:-translate-y-px transition-all">
+              <div style={{ background:'rgba(0,0,0,0.06)', borderRadius:'10px' }}
+                className="w-9 h-9 flex items-center justify-center mb-3 group-hover:bg-black/10 transition-colors">
+                <item.icon style={{ color: item.iconColor }} className="w-4 h-4" />
               </div>
-              <p style={{ fontSize:'13px' }} className="font-semibold text-white">{item.label}</p>
+              <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">{item.label}</p>
               <p style={{ color:'var(--text-muted)', fontSize:'12px' }} className="mt-0.5">{item.desc}</p>
-              <div className="flex items-center justify-between mt-3">
-                <span style={{ color:'var(--text-muted)', fontSize:'11px' }}>{item.stat}</span>
-                <ArrowRight style={{ color:'var(--text-muted)' }}
-                  className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:text-white transition-all" />
+              <div className="flex items-center justify-end mt-3">
+                <ArrowRight style={{ color: item.iconColor }} className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-all" />
               </div>
             </Link>
           ))}
@@ -245,12 +251,12 @@ export default function DashboardPage() {
         className="fade-up fade-up-3 p-4">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <p style={{ fontSize:'13px' }} className="font-semibold text-white">Plan Usage</p>
+            <p style={{ fontSize:'13px', color:'#0a0a0a' }} className="font-semibold">Plan Usage</p>
             <p style={{ color:'var(--text-muted)', fontSize:'12px' }}>Free plan · resets monthly</p>
           </div>
           <button onClick={()=>setUpgradeOpen(true)}
-            style={{ background:'var(--surface-3)', border:'1px solid var(--border)', color:'var(--text-secondary)', fontSize:'11px', borderRadius:'8px' }}
-            className="flex items-center gap-1.5 px-3 py-1.5 hover:text-white hover:border-white/20 transition-all">
+            style={{ background:'#0a0a0a', color:'#fff', fontSize:'11px', borderRadius:'8px' }}
+            className="flex items-center gap-1.5 px-3 py-1.5 font-semibold hover:bg-black/80 transition-all">
             <Crown className="w-3 h-3" /> Upgrade
           </button>
         </div>
@@ -268,7 +274,7 @@ export default function DashboardPage() {
                 </div>
                 <div style={{ background:'var(--surface-3)', borderRadius:'99px', height:'5px' }}>
                   <div style={{
-                    width: `${pct}%`, height:'5px', borderRadius:'99px',
+                    width: `${Math.max(pct,2)}%`, height:'5px', borderRadius:'99px',
                     background: warn ? 'var(--amber)' : b.color,
                     transition:'width 600ms ease'
                   }} />
@@ -277,17 +283,16 @@ export default function DashboardPage() {
             )
           })}
         </div>
-        {/* Pro teaser */}
         <button onClick={()=>setUpgradeOpen(true)}
           style={{ background:'var(--surface-2)', border:'1px solid var(--border)', borderRadius:'10px' }}
-          className="w-full mt-4 p-3 text-left hover:border-white/20 hover:bg-[#1c1c1c] transition-all">
+          className="w-full mt-4 p-3 text-left hover:border-black/20 hover:bg-black/5 transition-all">
           <div className="flex items-center justify-between">
             <div>
-              <p style={{ fontSize:'12px' }} className="font-semibold text-white">Upgrade to Pro</p>
+              <p style={{ fontSize:'12px', color:'#0a0a0a' }} className="font-semibold">Upgrade to Pro</p>
               <p style={{ color:'var(--text-muted)', fontSize:'11px' }}>Unlimited DMs, contacts & automations</p>
             </div>
             <div className="text-right">
-              <p style={{ fontSize:'14px', fontWeight:700 }} className="text-white">₹299<span style={{ color:'var(--text-muted)', fontSize:'10px', fontWeight:400 }}>/mo</span></p>
+              <p style={{ fontSize:'14px', fontWeight:700, color:'#0a0a0a' }}>₹299<span style={{ color:'var(--text-muted)', fontSize:'10px', fontWeight:400 }}>/mo</span></p>
               <p style={{ color:'var(--text-muted)', fontSize:'10px' }}>billed annually</p>
             </div>
           </div>
@@ -302,7 +307,7 @@ export default function DashboardPage() {
               className="uppercase font-semibold">Recent Posts</p>
             <Link href="/dashboard/insights"
               style={{ color:'var(--text-muted)', fontSize:'12px' }}
-              className="flex items-center gap-1 hover:text-white transition-colors">
+              className="flex items-center gap-1 hover:text-black transition-colors">
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
@@ -310,7 +315,7 @@ export default function DashboardPage() {
             {ig.posts.slice(0,8).map(post => (
               <a key={post.id} href={post.permalink} target="_blank" rel="noopener noreferrer"
                 style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px', overflow:'hidden' }}
-                className="group block hover:border-white/20 transition-all">
+                className="group block hover:border-black/20 transition-all">
                 <div className="aspect-square relative" style={{ background:'var(--surface-2)' }}>
                   {(post.media_url||post.thumbnail_url) ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -324,7 +329,7 @@ export default function DashboardPage() {
                         : <Image style={{ color:'var(--text-muted)' }} className="w-6 h-6" />}
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <ExternalLink className="w-4 h-4 text-white" />
                   </div>
                 </div>
@@ -342,21 +347,6 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
-
-      {/* Tip */}
-      <div style={{ background:'var(--surface-1)', border:'1px solid var(--border)', borderRadius:'12px' }}
-        className="fade-up p-4 flex items-start gap-3">
-        <div style={{ background:'var(--surface-3)', borderRadius:'8px' }}
-          className="w-8 h-8 flex items-center justify-center flex-shrink-0 mt-0.5">
-          <TrendingUp className="w-4 h-4 text-white" />
-        </div>
-        <div>
-          <p style={{ fontSize:'13px' }} className="font-semibold text-white">Growth tip</p>
-          <p style={{ color:'var(--text-muted)', fontSize:'12px' }} className="mt-0.5 leading-relaxed">
-            Reply to every comment within 1 hour of posting — Instagram rewards fast engagement with up to 3× more reach.
-          </p>
-        </div>
-      </div>
 
       <UpgradeModal open={upgradeOpen} onClose={()=>setUpgradeOpen(false)} />
     </div>
