@@ -18,11 +18,9 @@ const config: Config = {
           teal:  '#00ADB5',
           light: '#EEEEEE',
         },
-        // Alias for convenience
         teal: {
           DEFAULT: '#00ADB5',
           hover:   '#009aa2',
-          dim:     'rgba(0,173,181,0.12)',
         },
         surface: {
           1: '#2c3340',
@@ -87,6 +85,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [],
 }
 export default config
